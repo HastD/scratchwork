@@ -22,12 +22,13 @@ jobs:
           df -h
       - name: Analyze disk space
         run: |
-          ls -alh /etc/skel /home/packer /home/runner /opt/az /opt/google /opt/hostedtoolcache /opt/microsoft /opt/pipx /usr/bin /usr/lib /usr/libexec /usr/local /usr/share /var/lib
+          sudo ls -alh /etc/skel /home/packer /home/runner /opt/az /opt/hostedtoolcache /opt/pipx /usr/bin /usr/lib /usr/libexec /usr/local /usr/share /var/lib
       - name: Remove big things
         run: |
           set +e
           sudo swapoff -a
           sudo rm -f /mnt/swapfile
+          echo /opt/google /opt/microsoft | sudo xargs -n1 -P4 rm -rf
       - name: Check freed space
         run: |
           df -h
