@@ -17,3 +17,4 @@ jobs:
           set -x
           df -h
           ls -alh /
+          sudo du -hs /etc/* /home/* /imagegeneration/* /media/* /mnt/* /opt/* /snap/* /srv/* /usr/* /var/*
