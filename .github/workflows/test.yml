@@ -16,4 +16,4 @@ jobs:
       - run: |
           set -x
           df -h
-          tree -L2 /
+          ls -alh /
