@@ -20,10 +20,6 @@ jobs:
       - name: Summary
         run: |
           df -h
-      - name: Analyze disk space
-        run: |
-          shopt -s dotglob
-          sudo du -hs /usr/local/{lib,share}/* | grep -E '[0-9]+(\.[0-9]+)?[MG]'
       - name: Remove big things
         run: |
           set +e
@@ -32,6 +28,8 @@ jobs:
           echo /etc/skel /home/packer /opt/az /opt/google /opt/hostedtoolcache /opt/microsoft \
             /usr/lib/{firefox,google-cloud-sdk,jvm,llvm-16,llvm-17} \
             /usr/local/{.ghcup,aws-cli,aws-sam-cli,julia1.12.1} \
+            /usr/local/lib/{android,node_modules} \
+            /usr/local/share/{chromium,powershell} \
             /usr/share/{az_12.5.0,miniconda,swift} \
             | sudo xargs -n1 -P4 rm -rf
       - name: Check freed space
