@@ -22,13 +22,15 @@ jobs:
           df -h
       - name: Analyze disk space
         run: |
-          sudo ls -alh /etc/skel /home/packer /home/runner /opt/az /opt/hostedtoolcache /opt/pipx /usr/bin /usr/lib /usr/libexec /usr/local /usr/share /var/lib
+          shopt -s dotglob
+          sudo du -hs /home/runner/* /opt/az/* /opt/hostedtoolcache/* /opt/pipx/* /usr/bin/* /usr/lib/* /usr/libexec/* /usr/local/* /usr/share/* /var/lib/* \
+            | grep -E '[0-9]+(\.[0-9]+)?[MG]'
       - name: Remove big things
         run: |
           set +e
           sudo swapoff -a
           sudo rm -f /mnt/swapfile
-          echo /opt/google /opt/microsoft | sudo xargs -n1 -P4 rm -rf
+          echo /etc/skel /home/packer /opt/google /opt/microsoft | sudo xargs -n1 -P4 rm -rf
       - name: Check freed space
         run: |
           df -h
