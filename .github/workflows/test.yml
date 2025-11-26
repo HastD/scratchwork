@@ -14,7 +14,7 @@ defaults:
 
 jobs:
   disk-space:
-    name: Analyze disk usage
+    name: Disk usage
     runs-on: ubuntu-24.04
     steps:
       - name: Summary
@@ -23,14 +23,17 @@ jobs:
       - name: Analyze disk space
         run: |
           shopt -s dotglob
-          sudo du -hs /home/runner/* /opt/az/* /opt/hostedtoolcache/* /opt/pipx/* /usr/bin/* /usr/lib/* /usr/libexec/* /usr/local/* /usr/share/* /var/lib/* \
-            | grep -E '[0-9]+(\.[0-9]+)?[MG]'
+          sudo du -hs /usr/local/{lib,share}/* | grep -E '[0-9]+(\.[0-9]+)?[MG]'
       - name: Remove big things
         run: |
           set +e
           sudo swapoff -a
           sudo rm -f /mnt/swapfile
-          echo /etc/skel /home/packer /opt/google /opt/microsoft | sudo xargs -n1 -P4 rm -rf
+          echo /etc/skel /home/packer /opt/az /opt/google /opt/hostedtoolcache /opt/microsoft \
+            /usr/lib/{firefox,google-cloud-sdk,jvm,llvm-16,llvm-17} \
+            /usr/local/{.ghcup,aws-cli,aws-sam-cli,julia1.12.1} \
+            /usr/share/{az_12.5.0,miniconda,swift} \
+            | sudo xargs -n1 -P4 rm -rf
       - name: Check freed space
         run: |
           df -h
