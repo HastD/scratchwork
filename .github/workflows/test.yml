@@ -8,13 +8,27 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
+defaults:
+  run:
+    shell: bash
+
 jobs:
   disk-space:
     name: Analyze disk usage
     runs-on: ubuntu-24.04
     steps:
-      - run: |
-          set -x
+      - name: Summary
+        run: |
           df -h
-          ls -alh /
-          sudo du -hs /etc/* /home/* /imagegeneration/* /media/* /mnt/* /opt/* /snap/* /srv/* /usr/* /var/*
+      - name: Analyze disk space
+        run: |
+          sudo du -hs /etc/* /home/* /imagegeneration/* /mnt/* /opt/* /usr/* /var/* \
+            | grep -E '^[0-9]+(\.[0-9]+)?[MG]'
+      - name: Remove big things
+        run: |
+          set +e
+          sudo swapoff -a
+          sudo rm -f /mnt/swapfile
+      - name: Check freed space
+        run: |
+          df -h
