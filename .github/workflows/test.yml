@@ -13,24 +13,21 @@ defaults:
     shell: bash
 
 jobs:
-  disk-space:
-    name: Disk usage
+  test:
+    name: Test
     runs-on: ubuntu-24.04
     steps:
-      - name: Summary
+      - name: write
+        id: write
         run: |
-          df -h
-      - name: Remove big things
+          seq 10 > asdf.txt
+          {
+            echo 'foo<<EOF'
+            cat asdf.txt
+            echo 'EOF'
+          } >> "${GITHUB_OUTPUT}"
+      - name: read
+        env:
+          FOO: ${{ steps.write.outputs.foo }}
         run: |
-          sudo swapoff -a || true
-          echo /etc/skel /home/packer /mnt/swapfile \
-            /opt/{az,google,hostedtoolcache,microsoft} \
-            /usr/lib/{firefox,google-cloud-sdk,jvm,llvm-16,llvm-17} \
-            /usr/local/{.ghcup,aws-cli,aws-sam-cli,julia1.12.1} \
-            /usr/local/lib/{android,node_modules} \
-            /usr/local/share/{chromium,powershell} \
-            /usr/share/{az_12.5.0,miniconda,swift} \
-            | sudo xargs -n1 -P4 rm -rf || true
-      - name: Check freed space
-        run: |
-          df -h
+          echo "$FOO"
