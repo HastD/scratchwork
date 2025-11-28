@@ -4,30 +4,12 @@ on:
 
 permissions: {}
 
-concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
-
-defaults:
-  run:
-    shell: bash
-
 jobs:
   test:
-    name: Test
-    runs-on: ubuntu-24.04
-    steps:
-      - name: write
-        id: write
-        run: |
-          seq 10 > asdf.txt
-          {
-            echo 'foo<<EOF'
-            cat asdf.txt
-            echo 'EOF'
-          } >> "${GITHUB_OUTPUT}"
-      - name: read
-        env:
-          FOO: ${{ steps.write.outputs.foo }}
-        run: |
-          echo "$FOO"
+    strategy:
+      matrix:
+        nproc: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+    name: "Test (${{ matrix.nproc }} processes)"
+    uses: ./.github/workflows/free-disk-space.yml
+    with:
+      nproc: ${{ matrix.nproc }}
