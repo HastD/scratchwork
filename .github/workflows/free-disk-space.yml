@@ -29,4 +29,8 @@ jobs:
             /usr/local/share/{chromium,powershell}
             /usr/share/{az_12.5.0,dotnet,miniconda,swift}
           )
-          time printf '%s\0' "${paths_to_remove[@]}" | sudo xargs -0 -P"${nproc}" rm -rf -- || true
+          for depth in 2 1 0; do
+            printf '%s\0' "${paths_to_remove[@]}" \
+              | find -files0-from - -depth -mindepth "${depth}" -maxdepth "${depth}" \
+              | sudo xargs -0 -n1 -P"${nproc}" rm -rf -- || true
+          done
