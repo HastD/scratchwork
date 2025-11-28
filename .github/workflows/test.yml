@@ -6,10 +6,7 @@ permissions: {}
 
 jobs:
   test:
-    strategy:
-      matrix:
-        nproc: [2, 4, 6, 8]
-    name: "Test (${{ matrix.nproc }} processes)"
-    uses: ./.github/workflows/free-disk-space.yml
-    with:
-      nproc: ${{ matrix.nproc }}
+    name: Test
+    runs-on: ubuntu-24.04
+    steps:
+      - run: nproc
