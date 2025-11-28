@@ -29,4 +29,4 @@ jobs:
             /usr/local/share/{chromium,powershell}
             /usr/share/{az_12.5.0,dotnet,miniconda,swift}
           )
-          time printf '%s\0' "${paths_to_remove[@]}" | sudo xargs -0 -n1 -P"${nproc}" rm -rf -- || true
+          time printf '%s\0' "${paths_to_remove[@]}" | sudo xargs -0 -P"${nproc}" rm -rf -- || true
