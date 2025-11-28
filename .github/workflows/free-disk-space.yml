@@ -31,6 +31,7 @@ jobs:
           )
           for depth in 2 1 0; do
             printf '%s\0' "${paths_to_remove[@]}" \
-              | find -files0-from - -depth -mindepth "${depth}" -maxdepth "${depth}" \
+              | find -files0-from - -depth -mindepth "${depth}" -maxdepth "${depth}" -print0 \
               | sudo xargs -0 -n1 -P"${nproc}" rm -rf -- || true
           done
+          df -h
