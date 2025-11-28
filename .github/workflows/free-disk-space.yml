@@ -1,0 +1,32 @@
+name: Free disk space
+
+permissions: {}
+
+on:
+  workflow_call:
+    inputs:
+      nproc:
+        required: true
+        type: string
+
+jobs:
+  free:
+    name: Free disk space
+    runs-on: ubuntu-24.04
+    steps:
+      - shell: bash
+        env:
+          nproc: ${{ inputs.nproc }}
+        run: |
+          paths_to_remove=(
+            /etc/skel
+            /home/packer
+            /opt/{az,google,microsoft,pipx}
+            /opt/hostedtoolcache/{CodeQL,PyPy,Python,Ruby,go,node}
+            /usr/lib/{firefox,google-cloud-sdk,jvm,llvm-*}
+            /usr/local/{.ghcup,aws-cli,aws-sam-cli,julia1.12.1}
+            /usr/local/lib/{android,node_modules}
+            /usr/local/share/{chromium,powershell}
+            /usr/share/{az_12.5.0,dotnet,miniconda,swift}
+          )
+          time printf '%s\0' "${paths_to_remove[@]}" | sudo xargs -0 -n1 -P"${nproc}" rm -rf -- || true
