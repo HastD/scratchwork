@@ -6,7 +6,27 @@ permissions: {}
 
 jobs:
   test:
-    name: Test
+    name: build-chunked-oci
     runs-on: ubuntu-24.04
+    permissions:
+      packages: write
     steps:
-      - run: nproc
+      - uses: hastd/free-disk-space@main
+
+      - shell: bash
+        env:
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euxo pipefail
+          sudo apt install podman
+          podman pull quay.io/fedora-ostree-desktops/silverblue:43
+          podman pull ghcr.io/blue-build/rpm-ostree-container:latest
+
+          storage_dir="$HOME/.local/share/containers/storage"
+          podman run --privileged --rm -v "${storage_dir}:${storage_dir}" \
+            rpm-ostree-container:latest --storage="${storage_dir}" \
+            rpm-ostree compose build-chunked-oci --bootc --max-layers=128 \
+              --from=quay.io/fedora-ostree-desktops/silverblue:43 \
+              --output=containers-storage:ghcr.io/hastd/silverblue-rechunk-test:latest
+          echo "$GHCR_TOKEN" | podman login ghcr.io -u hastd --password-stdin
+          podman push silverblue-rechunk-test:latest docker://ghcr.io/hastd/silverblue-rechunk-test:latest
