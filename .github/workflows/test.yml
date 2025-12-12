@@ -18,6 +18,7 @@ jobs:
           GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euxo pipefail
+          sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
           sudo apt install podman skopeo
           podman pull quay.io/fedora-ostree-desktops/silverblue:43
           podman pull ghcr.io/blue-build/rpm-ostree-container:latest
