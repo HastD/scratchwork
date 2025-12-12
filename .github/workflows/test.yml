@@ -31,5 +31,5 @@ jobs:
               --output=containers-storage:ghcr.io/hastd/iot-rechunk-test:latest
           skopeo inspect -n containers-storage:ghcr.io/hastd/iot-rechunk-test:latest
           echo "$GHCR_TOKEN" | skopeo login ghcr.io -u hastd --password-stdin
-          skopeo copy --preserve-digests containers-storage:ghcr.io/hastd/iot-rechunk-test:latest docker://ghcr.io/hastd/iot-rechunk-test:latest
+          skopeo copy --all containers-storage:ghcr.io/hastd/iot-rechunk-test:latest docker://ghcr.io/hastd/iot-rechunk-test:latest
           skopeo inspect -n docker://ghcr.io/hastd/iot-rechunk-test:latest
