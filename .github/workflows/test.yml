@@ -27,6 +27,6 @@ jobs:
             rpm-ostree-container:latest --storage="${storage_dir}" \
             rpm-ostree compose build-chunked-oci --bootc --max-layers=128 \
               --from=quay.io/fedora-ostree-desktops/silverblue:43 \
-              --output=containers-storage:ghcr.io/hastd/silverblue-rechunk-test:latest
+              --output=containers-storage:localhost/silverblue-rechunk-test:latest
           echo "$GHCR_TOKEN" | skopeo login ghcr.io -u hastd --password-stdin
-          skopeo copy silverblue-rechunk-test:latest docker://ghcr.io/hastd/silverblue-rechunk-test:latest
+          skopeo copy docker://localhost/silverblue-rechunk-test:latest docker://ghcr.io/hastd/silverblue-rechunk-test:latest
