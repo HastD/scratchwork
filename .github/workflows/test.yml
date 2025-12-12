@@ -11,7 +11,7 @@ jobs:
     permissions:
       packages: write
     steps:
-      - uses: hastd/free-disk-space@main
+      # - uses: hastd/free-disk-space@main
 
       - shell: bash
         env:
@@ -20,17 +20,7 @@ jobs:
           set -euxo pipefail
           sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
           sudo apt install podman skopeo
-          podman pull quay.io/fedora/fedora-iot:43
-          podman pull ghcr.io/blue-build/rpm-ostree-container:latest
-
-          storage_dir="$HOME/.local/share/containers/storage"
-          tempdir=$(mktemp -d)
-          podman run --privileged --rm -v "${storage_dir}:${storage_dir}" \
-            rpm-ostree-container:latest --storage="${storage_dir}" \
-            rpm-ostree compose build-chunked-oci --bootc --format-version=2 --max-layers=128 \
-              --from=quay.io/fedora/fedora-iot:43 \
-              --output="oci:${tempdir}"
-          skopeo inspect -n "oci:${tempdir}"
+          skopeo inspect -n docker://quay.io/fedora/fedora-iot:43
           echo "$GHCR_TOKEN" | skopeo login ghcr.io -u hastd --password-stdin
-          skopeo copy "oci:${tempdir}" docker://ghcr.io/hastd/iot-rechunk-test:latest
-          skopeo inspect -n docker://ghcr.io/hastd/iot-rechunk-test:latest
+          skopeo copy docker://quay.io/fedora/fedora-iot:43 docker://ghcr.io/hastd/fedora-iot-test:latest
+          skopeo inspect -n docker://ghcr.io/hastd/fedora-iot-test:latest
