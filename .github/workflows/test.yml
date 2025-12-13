@@ -8,20 +8,14 @@ jobs:
   test:
     name: build-chunked-oci
     runs-on: ubuntu-24.04
-    permissions:
-      packages: write
+    container:
+      image: fedora:43
     steps:
-      # - uses: hastd/free-disk-space@main
-
       - shell: bash
-        env:
-          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euxo pipefail
-          sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
-          sudo apt install podman skopeo
+          sudo dnf install -y podman skopeo
           podman pull quay.io/fedora/fedora-iot:43
           skopeo inspect containers-storage:quay.io/fedora/fedora-iot:43
-          echo "$GHCR_TOKEN" | skopeo login ghcr.io -u hastd --password-stdin
           skopeo copy containers-storage:quay.io/fedora/fedora-iot:43 containers-storage:localhost/fedora-iot-test:latest
           skopeo inspect containers-storage:localhost/fedora-iot-test:latest
