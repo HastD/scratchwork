@@ -9,6 +9,8 @@ jobs:
     name: podman-test
     runs-on: ubuntu-24.04
     steps:
+      - name: Set up Homebrew
+        uses: Homebrew/actions/setup-homebrew@main
       - shell: bash
         run: |
           set -euxo pipefail
