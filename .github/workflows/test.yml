@@ -15,9 +15,8 @@ jobs:
           sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
           podman version
           podman pull docker://quay.io/skopeo/stable:latest
-          alias skopeo='podman run docker://quay.io/skopeo/stable:latest'
-          skopeo --version
+          podman run docker://quay.io/skopeo/stable:latest --version
           podman pull docker://quay.io/fedora/fedora-iot:43
-          skopeo inspect containers-storage:quay.io/fedora/fedora-iot:43
-          skopeo copy containers-storage:quay.io/fedora/fedora-iot:43 containers-storage:localhost/fedora-iot-test:latest
-          skopeo inspect containers-storage:localhost/fedora-iot-test:latest
+          podman run docker://quay.io/skopeo/stable:latest inspect containers-storage:quay.io/fedora/fedora-iot:43
+          podman run docker://quay.io/skopeo/stable:latest copy containers-storage:quay.io/fedora/fedora-iot:43 containers-storage:localhost/fedora-iot-test:latest
+          podman run docker://quay.io/skopeo/stable:latest inspect containers-storage:localhost/fedora-iot-test:latest
