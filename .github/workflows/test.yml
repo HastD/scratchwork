@@ -8,17 +8,39 @@ jobs:
   test:
     name: podman-test
     runs-on: ubuntu-24.04
+    permissions:
+      packages: write
     steps:
-      - name: Set up Homebrew
-        uses: Homebrew/actions/setup-homebrew@main
-      - shell: bash
+      - name: Install podman 5
+        shell: bash
+        run: |
+          echo "deb http://archive.ubuntu.com/ubuntu plucky main universe" | sudo tee /etc/apt/sources.list.d/plucky.list > /dev/null
+          
+          cat <<'EOF' | sudo tee /etc/apt/preferences.d/podman-plucky.pref > /dev/null
+          Package: podman buildah golang-github-containers-common crun libgpgme11t64 libgpg-error0 golang-github-containers-image catatonit conmon containers-storage
+          Pin: release n=plucky
+          Pin-Priority: 991
+          
+          Package: libsubid4 netavark passt aardvark-dns containernetworking-plugins libslirp0 slirp4netns
+          Pin: release n=plucky
+          Pin-Priority: 991
+          
+          Package: *
+          Pin: release n=plucky
+          Pin-Priority: 400
+          EOF
+          
+          sudo apt update
+          sudo apt install podman
+
+      - name: Image push test
+        shell: bash
+        env:
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euxo pipefail
-          sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
-          brew install skopeo
           podman version
-          skopeo --version
-          podman pull docker://quay.io/fedora/fedora-iot:43
-          skopeo inspect containers-storage:quay.io/fedora/fedora-iot:43
-          skopeo copy containers-storage:quay.io/fedora/fedora-iot:43 containers-storage:localhost/fedora-iot-test:latest
-          skopeo inspect containers-storage:localhost/fedora-iot-test:latest
+          podman pull quay.io/fedora/fedora-iot:43
+          echo "$GHCR_TOKEN" | podman login ghcr.io -u hastd --password-stdin
+          podman push quay.io/fedora/fedora-iot:43 docker://ghcr.io/hastd/fedora-iot-test:latest
+          skopeo inspect docker://ghcr.io/hastd/fedora-iot-test:latest
