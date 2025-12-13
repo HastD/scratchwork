@@ -8,21 +8,25 @@ jobs:
   test:
     name: podman-test
     runs-on: ubuntu-24.04
-    container:
-      image: fedora:43
-      options: --privileged
     permissions:
       packages: write
     steps:
+      - name: Set up Homebrew
+        uses: Homebrew/actions/setup-homebrew@main
+        
+      - name: Install newer podman
+        shell: bash
+        run: |
+          brew install podman
+        
       - name: Image push test
         shell: bash
         env:
           GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euxo pipefail
-          sudo dnf install -y podman skopeo
           podman version
-          sudo podman pull quay.io/fedora/fedora-iot:43
-          echo "$GHCR_TOKEN" | sudo podman login ghcr.io -u hastd --password-stdin
-          sudo podman push quay.io/fedora/fedora-iot:43 docker://ghcr.io/hastd/fedora-iot-test:latest
+          podman pull quay.io/fedora/fedora-iot:43
+          echo "$GHCR_TOKEN" | podman login ghcr.io -u hastd --password-stdin
+          podman push quay.io/fedora/fedora-iot:43 docker://ghcr.io/hastd/fedora-iot-test:latest
           skopeo inspect docker://ghcr.io/hastd/fedora-iot-test:latest
