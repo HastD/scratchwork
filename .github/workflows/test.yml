@@ -11,13 +11,25 @@ jobs:
     permissions:
       packages: write
     steps:
-      - name: Set up Homebrew
-        uses: Homebrew/actions/setup-homebrew@main
-        
-      - name: Install newer podman
+      - name: Install newer podman and skopeo
         shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-          brew install podman skopeo
+          release_assets=$(curl -fLsS --retry 5 \
+            -H 'Accept: application/vnd.github+json' \
+            -H "Authorization: Bearer ${GH_TOKEN}"  \
+            https://api.github.com/repos/fiftydinar/pseudo-static-bins-bluebuild/releases/latest \
+            | jq -cr '.assets | map({(.name | tostring): .browser_download_url}) | add')
+          podman_url=$(jq -cr '.[keys_unsorted[] | select(test("^podman-.*-x86_64\\.deb$"))]' <<<"${release_assets}")
+          skopeo_url=$(jq -cr '.[keys_unsorted[] | select(test("^skopeo-.*-x86_64$"))]' <<<"${release_assets}")
+          temp_dir=$(mktemp -d)
+          curl -fLsS --retry 5 \
+            -o "${temp_dir}/podman.deb" "${podman_url}" \
+            -o "${temp_dir}/skopeo" "${skopeo_url}"
+          sudo apt remove conmon containerd podman
+          sudo dpkg -i "${temp_dir}/podman.deb"
+          sudo install -m 755 "${temp_dir}/skopeo" /usr/bin/skopeo
         
       - name: Image push test
         shell: bash
