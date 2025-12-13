@@ -8,39 +8,21 @@ jobs:
   test:
     name: podman-test
     runs-on: ubuntu-24.04
+    container:
+      image: fedora:43
+      options: --privileged
     permissions:
       packages: write
     steps:
-      - name: Install podman 5
-        shell: bash
-        run: |
-          echo "deb http://archive.ubuntu.com/ubuntu questing main universe" | sudo tee /etc/apt/sources.list.d/questing.list > /dev/null
-          
-          cat <<'EOF' | sudo tee /etc/apt/preferences.d/podman-questing.pref > /dev/null
-          Package: podman buildah golang-github-containers-common crun libgpgme11t64 libgpg-error0 golang-github-containers-image catatonit conmon containers-storage
-          Pin: release n=questing
-          Pin-Priority: 991
-          
-          Package: libsubid4 netavark passt aardvark-dns containernetworking-plugins libslirp0 slirp4netns
-          Pin: release n=questing
-          Pin-Priority: 991
-          
-          Package: *
-          Pin: release n=questing
-          Pin-Priority: 400
-          EOF
-          
-          sudo apt update
-          sudo apt install podman
-
       - name: Image push test
         shell: bash
         env:
           GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euxo pipefail
+          sudo dnf install -y podman skopeo
           podman version
-          podman pull quay.io/fedora/fedora-iot:43
-          echo "$GHCR_TOKEN" | podman login ghcr.io -u hastd --password-stdin
-          podman push quay.io/fedora/fedora-iot:43 docker://ghcr.io/hastd/fedora-iot-test:latest
+          sudo podman pull quay.io/fedora/fedora-iot:43
+          echo "$GHCR_TOKEN" | sudo podman login ghcr.io -u hastd --password-stdin
+          sudo podman push quay.io/fedora/fedora-iot:43 docker://ghcr.io/hastd/fedora-iot-test:latest
           skopeo inspect docker://ghcr.io/hastd/fedora-iot-test:latest
