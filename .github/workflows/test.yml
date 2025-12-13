@@ -13,10 +13,10 @@ jobs:
         run: |
           set -euxo pipefail
           sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+          brew install skopeo
           podman version
-          podman pull docker://quay.io/skopeo/stable:latest
-          podman run docker://quay.io/skopeo/stable:latest --version
+          skopeo --version
           podman pull docker://quay.io/fedora/fedora-iot:43
-          podman run docker://quay.io/skopeo/stable:latest inspect containers-storage:quay.io/fedora/fedora-iot:43
-          podman run docker://quay.io/skopeo/stable:latest copy containers-storage:quay.io/fedora/fedora-iot:43 containers-storage:localhost/fedora-iot-test:latest
-          podman run docker://quay.io/skopeo/stable:latest inspect containers-storage:localhost/fedora-iot-test:latest
+          skopeo inspect containers-storage:quay.io/fedora/fedora-iot:43
+          skopeo copy containers-storage:quay.io/fedora/fedora-iot:43 containers-storage:localhost/fedora-iot-test:latest
+          skopeo inspect containers-storage:localhost/fedora-iot-test:latest
