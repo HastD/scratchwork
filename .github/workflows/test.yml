@@ -5,8 +5,8 @@ on:
 permissions: {}
 
 jobs:
-  test:
-    name: build-chunked-oci
+  test1:
+    name: on-fedora
     runs-on: ubuntu-24.04
     container:
       image: fedora:43
@@ -16,6 +16,22 @@ jobs:
         run: |
           set -euxo pipefail
           sudo dnf install -y podman skopeo
+          podman version
+          skopeo --version
+          sudo podman pull quay.io/fedora/fedora-iot:43
+          sudo skopeo inspect containers-storage:quay.io/fedora/fedora-iot:43
+          sudo skopeo copy containers-storage:quay.io/fedora/fedora-iot:43 containers-storage:localhost/fedora-iot-test:latest
+          sudo skopeo inspect containers-storage:localhost/fedora-iot-test:latest
+
+  test2:
+    name: on-ubuntu
+    runs-on: ubuntu-24.04
+    steps:
+      - shell: bash
+        run: |
+          set -euxo pipefail
+          podman version
+          skopeo --version
           sudo podman pull quay.io/fedora/fedora-iot:43
           sudo skopeo inspect containers-storage:quay.io/fedora/fedora-iot:43
           sudo skopeo copy containers-storage:quay.io/fedora/fedora-iot:43 containers-storage:localhost/fedora-iot-test:latest
