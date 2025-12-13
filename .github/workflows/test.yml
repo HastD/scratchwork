@@ -27,7 +27,7 @@ jobs:
           curl -fLsS --retry 5 \
             -o "${temp_dir}/podman.deb" "${podman_url}" \
             -o "${temp_dir}/skopeo" "${skopeo_url}"
-          sudo apt remove conmon containerd podman
+          sudo apt remove conmon containerd.io podman
           sudo dpkg -i "${temp_dir}/podman.deb"
           sudo install -m 755 "${temp_dir}/skopeo" /usr/bin/skopeo
         
