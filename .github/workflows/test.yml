@@ -10,6 +10,8 @@ jobs:
     runs-on: ubuntu-24.04
     container:
       image: fedora:43
+      volumes:
+        - /:/
     steps:
       - shell: bash
         run: |
