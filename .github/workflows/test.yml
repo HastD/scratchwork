@@ -17,7 +17,7 @@ jobs:
       - name: Install newer podman
         shell: bash
         run: |
-          brew install podman
+          brew install podman skopeo
         
       - name: Image push test
         shell: bash
@@ -25,6 +25,7 @@ jobs:
           GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euxo pipefail
+          sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
           podman version
           podman pull quay.io/fedora/fedora-iot:43
           echo "$GHCR_TOKEN" | podman login ghcr.io -u hastd --password-stdin
