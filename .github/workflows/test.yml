@@ -21,7 +21,7 @@ jobs:
           sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
           sudo apt install podman skopeo
           podman pull quay.io/fedora/fedora-iot:43
-          skopeo inspect -n containers-storage:quay.io/fedora/fedora-iot:43
+          skopeo inspect containers-storage:quay.io/fedora/fedora-iot:43
           echo "$GHCR_TOKEN" | skopeo login ghcr.io -u hastd --password-stdin
-          skopeo copy containers-storage:quay.io/fedora/fedora-iot:43 docker://ghcr.io/hastd/fedora-iot-test:latest
-          skopeo inspect -n docker://ghcr.io/hastd/fedora-iot-test:latest
+          skopeo copy containers-storage:quay.io/fedora/fedora-iot:43 containers-storage:localhost/fedora-iot-test:latest
+          skopeo inspect containers-storage:localhost/fedora-iot-test:latest
