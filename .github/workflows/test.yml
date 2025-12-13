@@ -10,14 +10,13 @@ jobs:
     runs-on: ubuntu-24.04
     container:
       image: fedora:43
-      volumes:
-        - /home/runner
+      options: --privileged
     steps:
       - shell: bash
         run: |
           set -euxo pipefail
           sudo dnf install -y podman skopeo
-          podman pull quay.io/fedora/fedora-iot:43
-          skopeo inspect containers-storage:quay.io/fedora/fedora-iot:43
-          skopeo copy containers-storage:quay.io/fedora/fedora-iot:43 containers-storage:localhost/fedora-iot-test:latest
-          skopeo inspect containers-storage:localhost/fedora-iot-test:latest
+          sudo podman pull quay.io/fedora/fedora-iot:43
+          sudo skopeo inspect containers-storage:quay.io/fedora/fedora-iot:43
+          sudo skopeo copy containers-storage:quay.io/fedora/fedora-iot:43 containers-storage:localhost/fedora-iot-test:latest
+          sudo skopeo inspect containers-storage:localhost/fedora-iot-test:latest
