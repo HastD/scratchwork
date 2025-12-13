@@ -5,34 +5,28 @@ on:
 permissions: {}
 
 jobs:
-  test1:
-    name: on-fedora
+  test:
+    name: podman-test
     runs-on: ubuntu-24.04
-    container:
-      image: fedora:43
-      options: --privileged
     steps:
+      - name: Set up newer Podman
+        shell: bash
+        run: |
+          set -euo pipefail
+          ubuntu_version='24.04'
+          key_url="https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/unstable/xUbuntu_${ubuntu_version}/Release.key"
+          sources_url="https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/unstable/xUbuntu_${ubuntu_version}"
+          echo "deb ${sources_url}/ /" | sudo tee /etc/apt/sources.list.d/devel-kubic-libcontainers-unstable.list
+          curl -fLsS --retry 5 "${key_url}" | gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/devel_kubic_libcontainers_unstable.gpg > /dev/null
+          sudo apt-get update
+          sudo apt-get install -y podman skopeo
       - shell: bash
         run: |
           set -euxo pipefail
-          sudo dnf install -y podman skopeo
+          sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
           podman version
           skopeo --version
-          sudo podman pull quay.io/fedora/fedora-iot:43
-          sudo skopeo inspect containers-storage:quay.io/fedora/fedora-iot:43
-          sudo skopeo copy containers-storage:quay.io/fedora/fedora-iot:43 containers-storage:localhost/fedora-iot-test:latest
-          sudo skopeo inspect containers-storage:localhost/fedora-iot-test:latest
-
-  test2:
-    name: on-ubuntu
-    runs-on: ubuntu-24.04
-    steps:
-      - shell: bash
-        run: |
-          set -euxo pipefail
-          podman version
-          skopeo --version
-          sudo podman pull quay.io/fedora/fedora-iot:43
-          sudo skopeo inspect containers-storage:quay.io/fedora/fedora-iot:43
-          sudo skopeo copy containers-storage:quay.io/fedora/fedora-iot:43 containers-storage:localhost/fedora-iot-test:latest
-          sudo skopeo inspect containers-storage:localhost/fedora-iot-test:latest
+          podman pull quay.io/fedora/fedora-iot:43
+          skopeo inspect containers-storage:quay.io/fedora/fedora-iot:43
+          skopeo copy containers-storage:quay.io/fedora/fedora-iot:43 containers-storage:localhost/fedora-iot-test:latest
+          skopeo inspect containers-storage:localhost/fedora-iot-test:latest
