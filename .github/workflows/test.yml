@@ -14,19 +14,19 @@ jobs:
       - name: Install podman 5
         shell: bash
         run: |
-          echo "deb http://archive.ubuntu.com/ubuntu plucky main universe" | sudo tee /etc/apt/sources.list.d/plucky.list > /dev/null
+          echo "deb http://archive.ubuntu.com/ubuntu questing main universe" | sudo tee /etc/apt/sources.list.d/questing.list > /dev/null
           
-          cat <<'EOF' | sudo tee /etc/apt/preferences.d/podman-plucky.pref > /dev/null
+          cat <<'EOF' | sudo tee /etc/apt/preferences.d/podman-questing.pref > /dev/null
           Package: podman buildah golang-github-containers-common crun libgpgme11t64 libgpg-error0 golang-github-containers-image catatonit conmon containers-storage
-          Pin: release n=plucky
+          Pin: release n=questing
           Pin-Priority: 991
           
           Package: libsubid4 netavark passt aardvark-dns containernetworking-plugins libslirp0 slirp4netns
-          Pin: release n=plucky
+          Pin: release n=questing
           Pin-Priority: 991
           
           Package: *
-          Pin: release n=plucky
+          Pin: release n=questing
           Pin-Priority: 400
           EOF
           
