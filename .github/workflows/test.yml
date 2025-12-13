@@ -11,25 +11,17 @@ jobs:
     permissions:
       packages: write
     steps:
+      - name: Set up Homebrew
+        uses: Homebrew/actions/setup-homebrew@11e37b59b0ec97a638b659c23418c47a7219304e
+  
       - name: Install newer podman and skopeo
         shell: bash
-        env:
-          GH_TOKEN: ${{ github.token }}
         run: |
-          release_assets=$(curl -fLsS --retry 5 \
-            -H 'Accept: application/vnd.github+json' \
-            -H "Authorization: Bearer ${GH_TOKEN}"  \
-            https://api.github.com/repos/fiftydinar/pseudo-static-bins-bluebuild/releases/latest \
-            | jq -cr '.assets | map({(.name | tostring): .browser_download_url}) | add')
-          podman_url=$(jq -cr '.[keys_unsorted[] | select(test("^podman-.*-x86_64\\.deb$"))]' <<<"${release_assets}")
-          skopeo_url=$(jq -cr '.[keys_unsorted[] | select(test("^skopeo-.*-x86_64$"))]' <<<"${release_assets}")
-          temp_dir=$(mktemp -d)
-          curl -fLsS --retry 5 \
-            -o "${temp_dir}/podman.deb" "${podman_url}" \
-            -o "${temp_dir}/skopeo" "${skopeo_url}"
-          sudo apt remove conmon containerd.io podman
-          sudo dpkg -i "${temp_dir}/podman.deb"
-          sudo install -m 755 "${temp_dir}/skopeo" /usr/bin/skopeo
+          sudo apt remove podman skopeo
+          brew analytics off
+          brew install podman skopeo
+          sudo ln -s "${HOMEBREW_PREFIX}/bin/podman" /usr/bin/podman
+          sudo ln -s "${HOMEBREW_PREFIX}/bin/skopeo" /usr/bin/skopeo
         
       - name: Image push test
         shell: bash
@@ -37,6 +29,7 @@ jobs:
           GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euxo pipefail
+          ls -lh /usr/local /usr/local/bin
           sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
           podman version
           podman pull quay.io/fedora/fedora-iot:43
