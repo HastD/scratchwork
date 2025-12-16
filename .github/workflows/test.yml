@@ -28,9 +28,14 @@ jobs:
           GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euxo pipefail
-          sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
           podman version
-          podman pull quay.io/fedora/fedora-iot:43
+
+          podman pull ghcr.io/blue-build/rpm-ostree-container:latest
+          storage_dir=$(podman info", --format='{{.Store.GraphRoot}}')
+          podman run --privileged --rm -v "${storage_dir}:${storage_dir}" \
+              rpm-ostree-container:latest --storage="${storage_dir}" \
+              podman pull quay.io/fedora/fedora-iot:43
+
           podman manifest create --all iot-manifest-test:latest containers-storage:quay.io/fedora/fedora-iot:43
           skopeo inspect containers-storage:iot-manifest-test:latest || true
           echo "$GHCR_TOKEN" | podman login ghcr.io -u hastd --password-stdin
