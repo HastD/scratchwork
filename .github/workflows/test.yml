@@ -31,8 +31,8 @@ jobs:
           sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
           podman version
           podman pull quay.io/fedora/fedora-iot:43
-          podman manifest create --all iot-manifest-test:latest quay.io/fedora/fedora-iot:43
+          podman manifest create --all iot-manifest-test:latest containers-storage:quay.io/fedora/fedora-iot:43
           skopeo inspect containers-storage:iot-manifest-test:latest || true
           echo "$GHCR_TOKEN" | podman login ghcr.io -u hastd --password-stdin
           podman manifest push iot-manifest-test:latest docker://ghcr.io/hastd/iot-manifest-test:latest
-          skopeo inspect docker://ghcr.io/hastd/iot-manifest-test:latest || true
+          skopeo inspect docker://ghcr.io/hastd/iot-manifest-test:latest
