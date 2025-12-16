@@ -33,7 +33,7 @@ jobs:
 
           podman pull ghcr.io/blue-build/rpm-ostree-container:latest
           storage_dir=$(podman info --format='{{.Store.GraphRoot}}')
-          podman run --privileged --rm -v "${storage_dir}:${storage_dir}" \
+          podman run --privileged --rm -v "/home/runner:/home/runner" \
               rpm-ostree-container:latest --storage="${storage_dir}" \
               podman pull quay.io/fedora/fedora-iot:43
 
