@@ -18,6 +18,7 @@ jobs:
         shell: bash
         run: |
           sudo apt remove crun podman skopeo
+          sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
           brew analytics off
           brew install crun podman skopeo
           brew services start podman
@@ -31,7 +32,7 @@ jobs:
           podman version
 
           podman pull ghcr.io/blue-build/rpm-ostree-container:latest
-          storage_dir=$(podman info", --format='{{.Store.GraphRoot}}')
+          storage_dir=$(podman info --format='{{.Store.GraphRoot}}')
           podman run --privileged --rm -v "${storage_dir}:${storage_dir}" \
               rpm-ostree-container:latest --storage="${storage_dir}" \
               podman pull quay.io/fedora/fedora-iot:43
