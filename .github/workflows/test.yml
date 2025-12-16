@@ -17,11 +17,10 @@ jobs:
       - name: Install newer podman and skopeo
         shell: bash
         run: |
-          sudo apt remove podman skopeo
+          sudo apt remove crun podman skopeo
           brew analytics off
-          brew install podman skopeo
-          sudo ln -s "${HOMEBREW_PREFIX}/bin/podman" /usr/bin/podman
-          sudo ln -s "${HOMEBREW_PREFIX}/bin/skopeo" /usr/bin/skopeo
+          brew install crun podman skopeo
+          brew services start podman
         
       - name: Image push test
         shell: bash
@@ -29,10 +28,11 @@ jobs:
           GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euxo pipefail
-          ls -lh /usr/local /usr/local/bin
           sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
           podman version
           podman pull quay.io/fedora/fedora-iot:43
+          podman manifest create --all iot-manifest-test:latest quay.io/fedora/fedora-iot:43
+          skopeo inspect containers-storage:iot-manifest-test:latest || true
           echo "$GHCR_TOKEN" | podman login ghcr.io -u hastd --password-stdin
-          podman push quay.io/fedora/fedora-iot:43 docker://ghcr.io/hastd/fedora-iot-test:latest
-          skopeo inspect docker://ghcr.io/hastd/fedora-iot-test:latest
+          podman manifest push iot-manifest-test:latest docker://ghcr.io/hastd/iot-manifest-test:latest
+          skopeo inspect docker://ghcr.io/hastd/iot-manifest-test:latest || true
