@@ -11,34 +11,26 @@ jobs:
     permissions:
       packages: write
     steps:
-      - name: Set up Homebrew
-        uses: Homebrew/actions/setup-homebrew@11e37b59b0ec97a638b659c23418c47a7219304e
-  
-      - name: Install newer podman and skopeo
-        shell: bash
-        run: |
-          sudo apt remove crun podman skopeo
-          sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
-          brew analytics off
-          brew install crun podman skopeo
-          brew services start podman
-        
       - name: Image push test
         shell: bash
         env:
           GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euxo pipefail
-          podman version
+          echo "$GHCR_TOKEN" | podman login ghcr.io -u hastd --password-stdin
 
           podman pull ghcr.io/blue-build/rpm-ostree-container:latest
           storage_dir=$(podman info --format='{{.Store.GraphRoot}}')
-          podman run --privileged -v "${storage_dir}:${storage_dir}" \
-              rpm-ostree-container:latest --storage="${storage_dir}" \
-              podman pull quay.io/fedora/fedora-iot:43
+          runtime_dir=$(podman info --format='{{.Store.RunRoot}}')
+          container=$(podman run --detach --rm --privileged \
+            -v "${storage_dir}:${storage_dir}" \
+            -v "${runtime_dir}:/run/containers" \
+            rpm-ostree-container:latest --storage="${storage_dir}" sleep 3600)
 
-          skopeo inspect containers-storage:quay.io/fedora/fedora-iot:43
-          podman manifest create --all iot-manifest-test:latest containers-storage:quay.io/fedora/fedora-iot:43
-          echo "$GHCR_TOKEN" | podman login ghcr.io -u hastd --password-stdin
-          podman manifest push iot-manifest-test:latest docker://ghcr.io/hastd/iot-manifest-test:latest
-          skopeo inspect docker://ghcr.io/hastd/iot-manifest-test:latest
+          podman exec "$container" podman pull quay.io/fedora/fedora-iot:43
+          podman exec "$container" skopeo inspect containers-storage:quay.io/fedora/fedora-iot:43
+          podman exec "$container" podman manifest create --all \
+            iot-manifest-test:latest containers-storage:quay.io/fedora/fedora-iot:43
+          podman exec "$container" podman manifest push --authfile=/run/containers/auth.json \
+            iot-manifest-test:latest docker://ghcr.io/hastd/iot-manifest-test:latest
+          podman exec "$container" skopeo inspect docker://ghcr.io/hastd/iot-manifest-test:latest
