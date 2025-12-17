@@ -29,8 +29,7 @@ jobs:
 
           podman exec "$container" podman pull quay.io/fedora/fedora-iot:43
           podman exec "$container" skopeo inspect containers-storage:quay.io/fedora/fedora-iot:43
-          podman manifest create --all \
-            iot-manifest-test:latest containers-storage:quay.io/fedora/fedora-iot:43
-          podman manifest push --authfile=/run/containers/auth.json \
-            iot-manifest-test:latest docker://ghcr.io/hastd/iot-manifest-test:latest
+          podman manifest create --all iot-manifest-test:latest containers-storage:quay.io/fedora/fedora-iot:43
+          # podman exec "$container" podman manifest push --authfile=/run/containers/auth.json iot-manifest-test:latest docker://ghcr.io/hastd/iot-manifest-test:latest
+          podman manifest push iot-manifest-test:latest docker://ghcr.io/hastd/iot-manifest-test:latest
           podman exec "$container" skopeo inspect docker://ghcr.io/hastd/iot-manifest-test:latest
