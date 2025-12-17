@@ -28,8 +28,8 @@ jobs:
             rpm-ostree-container:latest --storage="${storage_dir}" sleep 3600)
 
           podman pull quay.io/fedora/fedora-iot:43
-          podman exec "${container}" rpm-ostree compose build-chunked-oci --bootc --format-version=2 --max-layers=128 --from=quay.io/fedora/fedora-iot:43 --output=containers-storage:iot-rechunk-test:latest
-          podman exec "${container}" skopeo inspect containers-storage:iot-rechunk-test:latest
-          podman exec "${container}" podman manifest create iot-manifest-test:latest containers-storage:iot-rechunk-test:latest
+          podman exec "${container}" rpm-ostree compose build-chunked-oci --bootc --format-version=2 --max-layers=128 --from=quay.io/fedora/fedora-iot:43 --output=containers-storage:localhost/iot-rechunk-test:latest
+          podman exec "${container}" skopeo inspect containers-storage:localhost/iot-rechunk-test:latest
+          podman exec "${container}" podman manifest create iot-manifest-test:latest containers-storage:localhost/iot-rechunk-test:latest
           podman exec "${container}" podman manifest push --authfile=/run/containers/auth.json iot-manifest-test:latest docker://ghcr.io/hastd/iot-manifest-test:latest
           podman exec "${container}" skopeo inspect docker://ghcr.io/hastd/iot-manifest-test:latest
