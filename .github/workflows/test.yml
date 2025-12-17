@@ -33,11 +33,11 @@ jobs:
 
           podman pull ghcr.io/blue-build/rpm-ostree-container:latest
           storage_dir=$(podman info --format='{{.Store.GraphRoot}}')
-          temp_storage_dir=$(podman info --format='{{.Store.RunRoot}}')
-          podman run --privileged -v "${storage_dir}:${storage_dir}" -v "${temp_storage_dir}:/run/containers" \
+          podman run --privileged -v "${storage_dir}:${storage_dir}" \
               rpm-ostree-container:latest --storage="${storage_dir}" \
               podman pull quay.io/fedora/fedora-iot:43
 
+          skopeo inspect containers-storage:quay.io/fedora/fedora-iot:43
           podman manifest create --all iot-manifest-test:latest containers-storage:quay.io/fedora/fedora-iot:43
           echo "$GHCR_TOKEN" | podman login ghcr.io -u hastd --password-stdin
           podman manifest push iot-manifest-test:latest docker://ghcr.io/hastd/iot-manifest-test:latest
