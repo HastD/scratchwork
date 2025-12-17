@@ -32,3 +32,4 @@ jobs:
           podman exec "${container}" skopeo copy --dest-compress-format=zstd containers-storage:localhost/iot-rechunk-test:latest containers-storage:ghcr.io/hastd/iot-rechunk-test:latest
           podman exec "${container}" skopeo inspect containers-storage:ghcr.io/hastd/iot-rechunk-test:latest
           podman exec "${container}" podman push --authfile=/run/containers/auth.json ghcr.io/hastd/iot-rechunk-test:latest
+          podman exec "${container}" skopeo inspect docker://ghcr.io/hastd/iot-rechunk-test:latest
