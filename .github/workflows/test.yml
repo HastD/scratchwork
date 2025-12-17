@@ -28,8 +28,12 @@ jobs:
             rpm-ostree-container:latest --storage="${storage_dir}" sleep 3600)
 
           podman exec "$container" podman pull quay.io/fedora/fedora-iot:43
-          podman exec "$container" skopeo inspect containers-storage:quay.io/fedora/fedora-iot:43
-          buildah manifest create iot-manifest-test:latest quay.io/fedora/fedora-iot:43
-          # podman exec "$container" podman manifest push --authfile=/run/containers/auth.json iot-manifest-test:latest docker://ghcr.io/hastd/iot-manifest-test:latest
-          buildah manifest push --all iot-manifest-test:latest docker://ghcr.io/hastd/iot-manifest-test:latest
-          podman exec "$container" skopeo inspect docker://ghcr.io/hastd/iot-manifest-test:latest
+
+          container2=$(podman run --detach --rm --privileged \
+            -v "${storage_dir}:${storage_dir}" \
+            -v "${runtime_dir}:/run/containers" \
+            rpm-ostree-container:latest --storage="${storage_dir}" sleep 3600)
+          podman exec "${container2}" skopeo inspect containers-storage:quay.io/fedora/fedora-iot:43
+          podman exec "${container2}" podman manifest create iot-manifest-test:latest quay.io/fedora/fedora-iot:43
+          podman exec "${container2}" podman manifest push --authfile=/run/containers/auth.json iot-manifest-test:latest docker://ghcr.io/hastd/iot-manifest-test:latest
+          podman exec "${container2}" skopeo inspect docker://ghcr.io/hastd/iot-manifest-test:latest
