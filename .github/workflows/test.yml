@@ -23,7 +23,9 @@ jobs:
           echo "$GHCR_TOKEN" | podman exec -i "${container}" podman login ghcr.io -u hastd --password-stdin
           podman exec "${container}" podman pull quay.io/fedora/fedora-iot:43
           podman exec "${container}" rpm-ostree compose build-chunked-oci --bootc --format-version=2 --max-layers=128 \
-            --from=quay.io/fedora/fedora-iot:43 --output=containers-storage:ghcr.io/hastd/iot-rechunk-test:latest
-          podman exec "${container}" skopeo inspect containers-storage:ghcr.io/hastd/iot-rechunk-test:latest
-          podman exec "${container}" podman push ghcr.io/hastd/iot-rechunk-test:latest
-          podman exec "${container}" skopeo inspect docker://ghcr.io/hastd/iot-rechunk-test:latest
+            --from=quay.io/fedora/fedora-iot:43 --output=containers-storage:ghcr.io/hastd/iot-rechunk-doublepush:latest
+          podman exec "${container}" skopeo inspect containers-storage:ghcr.io/hastd/iot-rechunk-doublepush:latest
+          podman exec "${container}" podman push ghcr.io/hastd/iot-rechunk-doublepush:latest
+          podman exec "${container}" skopeo inspect docker://ghcr.io/hastd/iot-rechunk-doublepush:latest
+          podman exec "${container}" podman push ghcr.io/hastd/iot-rechunk-doublepush:latest
+          podman exec "${container}" skopeo inspect docker://ghcr.io/hastd/iot-rechunk-doublepush:latest
