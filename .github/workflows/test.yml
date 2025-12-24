@@ -26,8 +26,8 @@ jobs:
         env:
           AUTH_HEADER: "Authorization: Bearer ${{ github.token }}"
         run: |
-          crun_url=$(curl -fLsS -H 'Accept: application/vnd.github+json' --variable '%AUTH_HEADER' --expand-header '{{AUTH_HEADER}}' -o - https://api.github.com/repos/containers/crun/releases/latest \
-            | jq '.assets | map(select(.name | test("^crun-.*-linux-amd64$"))) | first | .browser_download_url')
+          crun_url=$(curl -fLsS -H 'Accept: application/vnd.github+json' -H "${AUTH_HEADER}" -o - https://api.github.com/repos/containers/crun/releases/latest \
+            | jq -cr '.assets | map(select(.name | test("^crun-.*-linux-amd64$"))) | first | .browser_download_url')
           crun_tempfile=$(mktemp)
           curl -fLsS -o "${crun_tempfile}" "${crun_url}"
           sudo install -m 755 "${crun_tempfile}" /usr/bin/crun
