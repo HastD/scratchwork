@@ -36,9 +36,15 @@ jobs:
           sudo make install PREFIX=/usr
           cd -
 
-      - name: podman info
+      - name: podman setup
         shell: bash
-        run: podman info
+        run: |
+          sudo mkdir -p /etc/containers/containers.conf.d
+          cat <<'EOF' | sudo tee /etc/containers/containers.conf.d/crun-runtime.conf > /dev/null
+          [engine]
+          runtime = "crun"
+          EOF
+          podman info
 
       - name: Image push test
         shell: bash
