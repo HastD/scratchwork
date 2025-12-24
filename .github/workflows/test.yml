@@ -10,13 +10,28 @@ jobs:
     permissions:
       packages: write
     steps:
+      - name: Install dependencies
+        shell: bash
+        run: |
+          sudo apt-get install btrfs-progs gcc git golang-go go-md2man iptables libassuan-dev libbtrfs-dev libc6-dev \
+            libdevmapper-dev libglib2.0-dev libgpgme-dev libgpg-error-dev libprotobuf-dev libprotobuf-c-dev libseccomp-dev \
+            libselinux1-dev libsystemd-dev make netavark passt pkg-config runc uidmap
+  
+      - name: Build podman from source
+        shell: bash
+        run: |
+          git pull --depth=1 https://github.com/containers/podman.git
+          cd podman
+          make
+          sudo make install
+
       - name: Image push test
         shell: bash
         env:
           GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euxo pipefail
-
+          podman version
           podman pull ghcr.io/blue-build/rpm-ostree-container:latest
           storage_dir=$(podman info -f '{{.Store.GraphRoot}}')
           container=$(podman run --detach --rm --privileged \
@@ -26,9 +41,6 @@ jobs:
           echo "$GHCR_TOKEN" | podman login ghcr.io -u hastd --password-stdin
           podman pull quay.io/fedora/fedora-iot:43
           podman exec "${container}" rpm-ostree compose build-chunked-oci --bootc --format-version=2 --max-layers=128 \
-            --from=quay.io/fedora/fedora-iot:43 --output=containers-storage:ghcr.io/hastd/iot-rechunk-doublepush:latest
-          podman unshare skopeo inspect containers-storage:ghcr.io/hastd/iot-rechunk-doublepush:latest
-          podman push ghcr.io/hastd/iot-rechunk-doublepush:latest
-          skopeo inspect docker://ghcr.io/hastd/iot-rechunk-doublepush:latest
-          podman push ghcr.io/hastd/iot-rechunk-doublepush:latest
-          skopeo inspect docker://ghcr.io/hastd/iot-rechunk-doublepush:latest
+            --from=quay.io/fedora/fedora-iot:43 --output=containers-storage:ghcr.io/hastd/iot-rechunk-test:latest
+          podman push ghcr.io/hastd/iot-rechunk-test:latest
+          skopeo inspect docker://ghcr.io/hastd/iot-rechunk-test:latest
