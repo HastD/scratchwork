@@ -24,15 +24,15 @@ jobs:
         run: |
           sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
 
-          git clone --depth=1 https://github.com/opencontainers/runc.git
-          cd runc
-          make
-          sudo cp runc /usr/bin/runc
+          git clone --depth=1 https://github.com/opencontainers/runc.git $GOPATH/src/github.com/opencontainers/runc
+          cd $GOPATH/src/github.com/opencontainers/runc
+          make BUILDTAGS="apparmor seccomp systemd"
+          sudo install runc /usr/bin/runc
           cd -
 
           git clone --depth=1 https://github.com/containers/podman.git
           cd podman
-          make PREFIX=/usr
+          make BUILDTAGS="apparmor seccomp systemd" PREFIX=/usr
           sudo make install PREFIX=/usr
           cd -
 
