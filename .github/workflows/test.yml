@@ -22,10 +22,11 @@ jobs:
       - name: Build podman from source
         shell: bash
         run: |
+          sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
           git clone --depth=1 https://github.com/containers/podman.git
           cd podman
-          make
-          sudo make install
+          make PREFIX=/usr
+          sudo make install PREFIX=/usr
 
       - name: Image push test
         shell: bash
