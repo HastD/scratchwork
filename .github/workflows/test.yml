@@ -5,7 +5,8 @@ on:
 permissions: {}
 
 jobs:
-  ubuntu-test:
+  test:
+    name: Test layer annotation push with podman dev version
     runs-on: ubuntu-24.04
     permissions:
       packages: write
@@ -13,7 +14,8 @@ jobs:
       - name: Install dependencies
         shell: bash
         run: |
-          sudo apt-get install btrfs-progs gcc git golang-go go-md2man iptables libassuan-dev libbtrfs-dev libc6-dev \
+          sudo apt update
+          sudo apt install btrfs-progs gcc git golang-go go-md2man iptables libassuan-dev libbtrfs-dev libc6-dev \
             libdevmapper-dev libglib2.0-dev libgpgme-dev libgpg-error-dev libprotobuf-dev libprotobuf-c-dev libseccomp-dev \
             libselinux1-dev libsystemd-dev make netavark passt pkg-config runc uidmap
   
