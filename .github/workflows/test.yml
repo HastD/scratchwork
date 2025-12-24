@@ -22,7 +22,7 @@ jobs:
       - name: Build podman from source
         shell: bash
         run: |
-          git pull --depth=1 https://github.com/containers/podman.git
+          git clone --depth=1 https://github.com/containers/podman.git
           cd podman
           make
           sudo make install
