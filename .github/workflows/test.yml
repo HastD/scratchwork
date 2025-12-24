@@ -17,17 +17,20 @@ jobs:
           sudo apt update
           sudo apt install btrfs-progs gcc git golang-go go-md2man iptables libassuan-dev libbtrfs-dev libc6-dev \
             libdevmapper-dev libglib2.0-dev libgpgme-dev libgpg-error-dev libprotobuf-dev libprotobuf-c-dev libseccomp-dev \
-            libselinux1-dev libsystemd-dev make netavark passt pkg-config runc uidmap
+            libselinux1-dev libsystemd-dev make netavark passt pkg-config runc uidmap \
+            build-essential pkgconf libtool libcap-dev libyajl-dev autoconf python3 automake
   
-      - name: Build podman from source
+      - name: Build crun and podman from source
         shell: bash
         run: |
           sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
 
-          git clone --depth=1 https://github.com/opencontainers/runc.git
-          cd runc
-          make BUILDTAGS="apparmor seccomp systemd" PREFIX=/usr
-          sudo make install PREFIX=/usr
+          git clone --depth=1 https://github.com/containers/crun.git
+          cd crun
+          ./autogen.sh
+          ./configure
+          make
+          sudo make install
           cd -
 
           git clone --depth=1 https://github.com/containers/podman.git
@@ -36,15 +39,9 @@ jobs:
           sudo make install PREFIX=/usr
           cd -
 
-      - name: podman setup
+      - name: podman info
         shell: bash
-        run: |
-          sudo mkdir -p /etc/containers/containers.conf.d
-          cat <<'EOF' | sudo tee /etc/containers/containers.conf.d/crun-runtime.conf > /dev/null
-          [engine]
-          runtime = "crun"
-          EOF
-          podman info
+        run: podman info
 
       - name: Image push test
         shell: bash
