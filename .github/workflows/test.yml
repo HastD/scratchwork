@@ -36,13 +36,16 @@ jobs:
           sudo make install PREFIX=/usr
           cd -
 
+      - name: podman info
+        shell: bash
+        run: podman info
+
       - name: Image push test
         shell: bash
         env:
           GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euxo pipefail
-          podman version
           podman pull ghcr.io/blue-build/rpm-ostree-container:latest
           storage_dir=$(podman info -f '{{.Store.GraphRoot}}')
           container=$(podman run --detach --rm --privileged \
