@@ -14,25 +14,28 @@ jobs:
       - name: Install dependencies
         shell: bash
         run: |
+          sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
           sudo apt update
           sudo apt install btrfs-progs gcc git golang-go go-md2man iptables libassuan-dev libbtrfs-dev libc6-dev \
             libdevmapper-dev libglib2.0-dev libgpgme-dev libgpg-error-dev libprotobuf-dev libprotobuf-c-dev libseccomp-dev \
             libselinux1-dev libsystemd-dev make netavark passt pkg-config runc uidmap \
-            build-essential pkgconf libtool libcap-dev libyajl-dev autoconf python3 automake
-  
-      - name: Build crun and podman from source
+            build-essential pkgconf libtool libcap-dev libyajl-dev autoconf python3 automake jq
+
+      - name: Install latest crun
+        shell: bash
+        env:
+          AUTH_HEADER: "Authorization: Bearer ${{ github.token }}"
+        run: |
+          crun_url=$(curl -fLsS -H 'Accept: application/vnd.github+json' -H "${AUTH_HEADER}" https://api.github.com/repos/containers/crun/releases/latest \
+            | jq '.assets | map(select(.name | test("^crun-.*-linux-amd64$"))) | first | .browser_download_url')
+          crun_tempfile=$(mktemp)
+          curl -fLsS -o "${crun_tempfile}" "${crun_url}"
+          sudo install -m 755 "${crun_tempfile}" /usr/bin/crun
+          rm "${crun_tempfile}"
+          
+      - name: Build podman from source
         shell: bash
         run: |
-          sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
-
-          git clone --depth=1 https://github.com/containers/crun.git
-          cd crun
-          ./autogen.sh
-          ./configure
-          make PREFIX=/usr
-          sudo make install PREFIX=/usr
-          cd -
-
           git clone --depth=1 https://github.com/containers/podman.git
           cd podman
           make BUILDTAGS="apparmor seccomp systemd" PREFIX=/usr
