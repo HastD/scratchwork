@@ -23,10 +23,18 @@ jobs:
         shell: bash
         run: |
           sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+
+          git clone --depth=1 https://github.com/opencontainers/runc.git
+          cd runc
+          make
+          sudo cp runc /usr/bin/runc
+          cd -
+
           git clone --depth=1 https://github.com/containers/podman.git
           cd podman
           make PREFIX=/usr
           sudo make install PREFIX=/usr
+          cd -
 
       - name: Image push test
         shell: bash
