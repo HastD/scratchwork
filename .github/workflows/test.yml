@@ -66,3 +66,5 @@ jobs:
             --from=quay.io/fedora/fedora-iot:43 --output=containers-storage:ghcr.io/hastd/iot-rechunk-test:latest
           podman push ghcr.io/hastd/iot-rechunk-test:latest
           skopeo inspect docker://ghcr.io/hastd/iot-rechunk-test:latest
+          podman push ghcr.io/hastd/iot-rechunk-test:latest
+          skopeo inspect docker://ghcr.io/hastd/iot-rechunk-test:latest
