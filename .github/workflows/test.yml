@@ -12,6 +12,6 @@ jobs:
       - name: Test date
         shell: bash
         env:
-          timestamp: ${{ github.env.created_at }}
+          timestamp: ${{ github.event.created_at }}
         run: |
           echo "$timestamp"
