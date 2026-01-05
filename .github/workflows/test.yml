@@ -6,65 +6,12 @@ permissions: {}
 
 jobs:
   test:
-    name: Test layer annotation push with podman dev version
+    name: Test dates
     runs-on: ubuntu-24.04
-    permissions:
-      packages: write
     steps:
-      - name: Install dependencies
-        shell: bash
-        run: |
-          sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
-          sudo apt update
-          sudo apt install btrfs-progs gcc git golang-go go-md2man iptables libassuan-dev libbtrfs-dev libc6-dev \
-            libdevmapper-dev libglib2.0-dev libgpgme-dev libgpg-error-dev libprotobuf-dev libprotobuf-c-dev libseccomp-dev \
-            libselinux1-dev libsystemd-dev make netavark passt pkg-config runc uidmap \
-            build-essential pkgconf libtool libcap-dev libyajl-dev autoconf python3 automake jq
-
-      - name: Install latest crun
+      - name: Test date
         shell: bash
         env:
-          AUTH_HEADER: "Authorization: Bearer ${{ github.token }}"
+          timestamp: ${{ github.env.created_at }}
         run: |
-          crun_url=$(curl -fLsS -H 'Accept: application/vnd.github+json' -H "${AUTH_HEADER}" -o - https://api.github.com/repos/containers/crun/releases/latest \
-            | jq -cr '.assets | map(select(.name | test("^crun-.*-linux-amd64$"))) | first | .browser_download_url')
-          crun_tempfile=$(mktemp)
-          curl -fLsS -o "${crun_tempfile}" "${crun_url}"
-          sudo install -m 755 "${crun_tempfile}" /usr/bin/crun
-          rm "${crun_tempfile}"
-          
-      - name: Build podman from source
-        shell: bash
-        run: |
-          git clone --depth=1 https://github.com/hastd/podman.git -b test
-          cd podman
-          make BUILDTAGS="apparmor seccomp systemd" PREFIX=/usr
-          sudo make install PREFIX=/usr
-          cd -
-
-      - name: podman info
-        shell: bash
-        run: |
-          crun --version
-          podman info
-
-      - name: Image push test
-        shell: bash
-        env:
-          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          set -euxo pipefail
-          podman pull ghcr.io/blue-build/rpm-ostree-container:latest
-          storage_dir=$(podman info -f '{{.Store.GraphRoot}}')
-          container=$(podman run --detach --rm --privileged \
-            -v "${storage_dir}:${storage_dir}" \
-            rpm-ostree-container:latest --storage="${storage_dir}" sleep 3600)
-
-          echo "$GHCR_TOKEN" | podman login ghcr.io -u hastd --password-stdin
-          podman pull quay.io/fedora/fedora-iot:43
-          podman exec "${container}" rpm-ostree compose build-chunked-oci --bootc --format-version=2 --max-layers=128 \
-            --from=quay.io/fedora/fedora-iot:43 --output=containers-storage:ghcr.io/hastd/iot-rechunk-test:latest
-          podman --log-level=debug push ghcr.io/hastd/iot-rechunk-test:latest
-          skopeo inspect docker://ghcr.io/hastd/iot-rechunk-test:latest
-          podman --log-level=debug push ghcr.io/hastd/iot-rechunk-test:latest
-          skopeo inspect docker://ghcr.io/hastd/iot-rechunk-test:latest
+          echo "$timestamp"
