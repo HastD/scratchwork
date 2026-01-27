@@ -9,7 +9,20 @@ jobs:
     name: Test ubuntu-slim
     runs-on: ubuntu-slim
     steps:
-      - shell: bash
+      - name: Install slsa-verifier
+        uses: slsa-framework/slsa-verifier/actions/installer@ea584f4502babc6f60d9bc799dbbb13c1caa9ee6 # v2.7.1
+      - name: Install crane
+        shell: bash
         run: |
-          sudo apt update
-          sudo apt install pipx
+          CRANE_VERSION=v0.20.7
+          CRANE_OS=Linux
+          CRANE_ARCH=x86_64
+          curl -fLsS --retry 5 "https://github.com/google/go-containerregistry/releases/download/${CRANE_VERSION}/go-containerregistry_${CRANE_OS}_${CRANE_ARCH}.tar.gz" > go-containerregistry.tar.gz
+          curl -fLsS --retry 5 "https://github.com/google/go-containerregistry/releases/download/${CRANE_VERSION}/multiple.intoto.jsonl" > provenance.intoto.jsonl
+          slsa-verifier verify-artifact go-containerregistry.tar.gz --provenance-path provenance.intoto.jsonl --source-uri github.com/google/go-containerregistry --source-tag "${CRANE_VERSION}"
+          tar -zxvf go-containerregistry.tar.gz -C /usr/local/bin/ crane
+      - name: test
+        shell: bash
+        run: |
+          slsa-verifier --version
+          crane --version
