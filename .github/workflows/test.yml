@@ -6,12 +6,9 @@ permissions: {}
 
 jobs:
   test:
-    name: Test dates
-    runs-on: ubuntu-24.04
+    name: Test ubuntu-slim
+    runs-on: ubuntu-slim
     steps:
-      - name: Test date
-        shell: bash
-        env:
-          timestamp: ${{ github.event.created_at }}
+      - shell: bash
         run: |
-          echo "$timestamp"
+          sudo apt-get install pipx
