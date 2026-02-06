@@ -6,23 +6,16 @@ permissions: {}
 
 jobs:
   test:
-    name: Test ubuntu-slim
-    runs-on: ubuntu-slim
+    name: Test initramfs
+    runs-on: ubuntu-latest
     steps:
-      - name: Install slsa-verifier
-        uses: slsa-framework/slsa-verifier/actions/installer@ea584f4502babc6f60d9bc799dbbb13c1caa9ee6 # v2.7.1
-      - name: Install crane
-        shell: bash
-        run: |
-          CRANE_VERSION=v0.20.7
-          CRANE_OS=Linux
-          CRANE_ARCH=x86_64
-          curl -fLsS --retry 5 "https://github.com/google/go-containerregistry/releases/download/${CRANE_VERSION}/go-containerregistry_${CRANE_OS}_${CRANE_ARCH}.tar.gz" > go-containerregistry.tar.gz
-          curl -fLsS --retry 5 "https://github.com/google/go-containerregistry/releases/download/${CRANE_VERSION}/multiple.intoto.jsonl" > provenance.intoto.jsonl
-          slsa-verifier verify-artifact go-containerregistry.tar.gz --provenance-path provenance.intoto.jsonl --source-uri github.com/google/go-containerregistry --source-tag "${CRANE_VERSION}"
-          tar -zxvf go-containerregistry.tar.gz -C /usr/local/bin/ crane
       - name: test
         shell: bash
         run: |
-          slsa-verifier version
-          crane version
+          for i in {0..59}; do
+            tag=$(date -d "$i days ago" -u '+%Y%m%d')
+            printf '%s' "$tag: "
+            podman run --rm "docker://ghcr.io/secureblue/silverblue-main-hardened:$tag" \
+              bash -c 'sha256sum /usr/lib/modules/*/initramfs.img'
+            podman system prune --all --force
+          done
