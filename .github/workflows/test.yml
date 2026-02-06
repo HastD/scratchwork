@@ -9,13 +9,19 @@ jobs:
     name: Test initramfs
     runs-on: ubuntu-latest
     steps:
+      - uses: hastd/free-disk-space@v0.1.1
       - name: test
         shell: bash
         run: |
           for i in {0..59}; do
             tag=$(date -d "$i days ago" -u '+%Y%m%d')
+            curr_image="docker://ghcr.io/secureblue/silverblue-main-hardened:$tag"
+            podman pull -q "$curr_image"
             printf '%s' "$tag: "
-            podman run -q --rm "docker://ghcr.io/secureblue/silverblue-main-hardened:$tag" \
-              bash -c 'sha256sum /usr/lib/modules/*/initramfs.img'
-            podman system prune --all --force &>/dev/null
+            podman run --rm "$curr_image" bash -c 'sha256sum /usr/lib/modules/*/initramfs.img'
+            if [[ -n "${prev_image-}" ]]; then
+              podman rmi "$prev_image" &>/dev/null
+              podman system prune -f &>/dev/null
+            fi
+            prev_image="$curr_image"
           done
