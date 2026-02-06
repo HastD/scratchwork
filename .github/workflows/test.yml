@@ -15,7 +15,7 @@ jobs:
           for i in {0..59}; do
             tag=$(date -d "$i days ago" -u '+%Y%m%d')
             printf '%s' "$tag: "
-            podman run --rm "docker://ghcr.io/secureblue/silverblue-main-hardened:$tag" \
+            podman run -q --rm "docker://ghcr.io/secureblue/silverblue-main-hardened:$tag" \
               bash -c 'sha256sum /usr/lib/modules/*/initramfs.img'
-            podman system prune --all --force
+            podman system prune --all --force &>/dev/null
           done
