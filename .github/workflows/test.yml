@@ -9,7 +9,7 @@ jobs:
     name: Test initramfs
     runs-on: ubuntu-latest
     steps:
-      - uses: hastd/free-disk-space@v0.1.1
+      - uses: hastd/free-disk-space@v0.1.2
         with:
           skip-if-available: "64G"
       - name: test
