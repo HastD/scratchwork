@@ -10,6 +10,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: hastd/free-disk-space@v0.1.1
+        with:
+          skip-if-available: "64G"
       - name: test
         shell: bash
         run: |
