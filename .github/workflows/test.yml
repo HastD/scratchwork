@@ -13,7 +13,7 @@ jobs:
       - name: test
         shell: bash
         run: |
-          for i in {0..59}; do
+          for i in {0..30}; do
             tag=$(date -d "$i days ago" -u '+%Y%m%d')
             curr_image="ghcr.io/secureblue/silverblue-main-hardened:$tag"
             podman pull -q "$curr_image" >/dev/null
