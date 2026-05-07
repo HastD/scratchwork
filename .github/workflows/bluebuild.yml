@@ -24,6 +24,6 @@ jobs:
           registry_token: ${{ github.token }}
           pr_event_number: ${{ github.event.number }}
           squash: true
-          build_chunked_oci: false
-          # max_layers: 64
+          build_chunked_oci: true
+          max_layers: 64
           retry_push_count: 3
