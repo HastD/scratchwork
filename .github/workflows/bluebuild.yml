@@ -27,7 +27,11 @@ jobs:
           build_chunked_oci: true
           max_layers: 64
           retry_push_count: 3
-      - name: Print manifest
+      - name: Print manifest (local)
+        shell: bash
+        run: |
+          skopeo inspect -n containers-storage:ghcr.io/hastd/bbtest:latest
+      - name: Print manifest (remote)
         shell: bash
         run: |
           skopeo inspect -n docker://ghcr.io/hastd/bbtest:latest
