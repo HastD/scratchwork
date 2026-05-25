@@ -30,7 +30,7 @@ jobs:
       - name: Print manifest (local)
         shell: bash
         run: |
-          skopeo inspect -n containers-storage:ghcr.io/hastd/bbtest:latest
+          podman unshare skopeo inspect -n containers-storage:ghcr.io/hastd/bbtest:latest
       - name: Print manifest (remote)
         shell: bash
         run: |
