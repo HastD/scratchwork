@@ -12,15 +12,9 @@ concurrency:
 jobs:
   chunkah:
     runs-on: ubuntu-24.04
-    container: fedora:44
     permissions:
       packages: write
     steps:
-      - name: Install dependencies
-        shell: bash
-        run: |
-          sudo dnf install -y podman skopeo
-
       - name: Run Chunkah
         shell: bash
         run: |
