@@ -35,6 +35,7 @@ jobs:
         run: |
           echo "${GH_TOKEN}" | podman login ghcr.io -u hastd --password-stdin
           podman push ghcr.io/hastd/fedora-iot-chunked:latest
+          podman push ghcr.io/hastd/fedora-iot-chunked:latest
 
       - name: Print manifest (local)
         run: |
