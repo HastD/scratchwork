@@ -29,10 +29,15 @@ jobs:
             --prune /sysroot/ --max-layers 72 --label ostree.commit- --label ostree.final-diffid- \
             -t ghcr.io/hastd/fedora-iot-chunked:latest | podman load
 
+      - name: Set up Homebrew
+        uses: Homebrew/actions/setup-homebrew@main
+
       - name: Push image
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          brew analytics off
+          brew install podman skopeo
           echo "${GH_TOKEN}" | podman login ghcr.io -u hastd --password-stdin
           podman push ghcr.io/hastd/fedora-iot-chunked:latest
           podman push ghcr.io/hastd/fedora-iot-chunked:latest
