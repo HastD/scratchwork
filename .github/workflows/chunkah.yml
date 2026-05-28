@@ -16,6 +16,11 @@ jobs:
     permissions:
       packages: write
     steps:
+      - name: Install dependencies
+        shell: bash
+        run: |
+          sudo dnf install -y podman skopeo
+
       - name: Run Chunkah
         shell: bash
         run: |
@@ -26,6 +31,7 @@ jobs:
             -e CHUNKAH_CONFIG_STR quay.io/coreos/chunkah:latest build \
             --prune /sysroot/ --max-layers 128 --label ostree.commit- --label ostree.final-diffid- \
             -t localhost/fedora-iot-chunked:latest | podman load
+
       - name: Print manifest (local)
         shell: bash
         run: |
