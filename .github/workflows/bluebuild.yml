@@ -24,8 +24,8 @@ jobs:
           registry_token: ${{ github.token }}
           pr_event_number: ${{ github.event.number }}
           squash: true
-          build_chunked_oci: true
-          max_layers: 64
+          chunkah: true
+          max_layers: 72
           retry_push_count: 3
       - name: Print manifest (local)
         shell: bash
