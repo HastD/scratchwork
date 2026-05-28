@@ -1,0 +1,31 @@
+name: chunkah
+on:
+  workflow_dispatch: # allow manually triggering builds
+
+permissions: {}
+
+concurrency:
+  # only run one build at a time
+  group: ${{ github.workflow }}-${{ github.ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  chunkah:
+    runs-on: ubuntu-24.04
+    permissions:
+      packages: write
+    steps:
+      - name: Run Chunkah
+        shell: bash
+        run: |
+          image_ref='quay.io/fedora/fedora-iot:44'
+          podman pull "${image_ref}"
+          export CHUNKAH_CONFIG_STR="$(podman inspect "${image_ref}")"
+          podman run --rm --mount="type=image,src=${image_ref},dest=/chunkah" \
+            -e CHUNKAH_CONFIG_STR quay.io/coreos/chunkah:latest build \
+            --prune /sysroot/ --max-layers 128 --label ostree.commit- --label ostree.final-diffid- \
+            -t localhost/fedora-iot-chunked:latest | podman load
+      - name: Print manifest (local)
+        shell: bash
+        run: |
+          podman unshare skopeo inspect -n containers-storage:localhost/fedora-iot-chunked:latest
