@@ -9,6 +9,10 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref || github.run_id }}
   cancel-in-progress: true
 
+defaults:
+  run:
+    shell: bash
+
 jobs:
   chunkah:
     runs-on: ubuntu-24.04
@@ -16,7 +20,6 @@ jobs:
       packages: write
     steps:
       - name: Run Chunkah
-        shell: bash
         run: |
           image_ref='quay.io/fedora/fedora-iot:44'
           podman pull "${image_ref}"
@@ -24,9 +27,19 @@ jobs:
           podman run --rm --mount="type=image,src=${image_ref},destination=/chunkah" \
             -e CHUNKAH_CONFIG_STR quay.io/coreos/chunkah:latest build \
             --prune /sysroot/ --max-layers 72 --label ostree.commit- --label ostree.final-diffid- \
-            -t localhost/fedora-iot-chunked:latest | podman load
+            -t ghcr.io/hastd/fedora-iot-chunked:latest | podman load
+
+      - name: Push image
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "${GH_TOKEN}" | podman login ghcr.io -u hastd --password-stdin
+          podman push ghcr.io/hastd/fedora-iot-chunked:latest
 
       - name: Print manifest (local)
-        shell: bash
         run: |
-          podman unshare skopeo inspect -n containers-storage:localhost/fedora-iot-chunked:latest
+          podman unshare skopeo inspect -n containers-storage:ghcr.io/hastd/fedora-iot-chunked:latest
+
+      - name: Print manifest (remote)
+        run: |
+          skopeo inspect -n docker://ghcr.io/hastd/fedora-iot-chunked:latest
