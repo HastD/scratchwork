@@ -20,6 +20,11 @@ jobs:
       matrix:
         compressed: ["", "--compressed"]
     steps:
+      - name: Free disk space
+        uses: hastd/free-disk-space@v0.1.2
+        with:
+          skip-if-available: 64G
+
       - name: Run Chunkah
         env:
           COMPRESSED: ${{ matrix.compressed }}
