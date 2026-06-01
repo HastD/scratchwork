@@ -35,7 +35,8 @@ jobs:
             quay.io/coreos/chunkah:latest build --config "${config_file}" \
             ${COMPRESSED} --prune /sysroot/ --max-layers 128 \
             --label ostree.commit- --label ostree.final-diffid- \
-            -t localhost/secureblue-chunkah-test:latest | podman load
+            -t localhost/secureblue-chunkah-test:latest --output "${temp_dir}/out.ociarchive"
+          podman load -i "${temp_dir}/out.ociarchive"
 
       - name: Print manifest (local)
         run: |
