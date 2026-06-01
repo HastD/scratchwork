@@ -39,7 +39,7 @@ jobs:
           mkdir "${oci_dir}"
           podman run --rm -v "${temp_dir}:${temp_dir}" \
             --mount="type=image,src=${image_ref},destination=/chunkah" \
-            quay.io/coreos/chunkah:latest build --config "${config_file}" \
+            quay.io/coreos/chunkah:dev build --config "${config_file}" \
             ${COMPRESSED} --prune /sysroot/ --max-layers 128 \
             --label ostree.commit- --label ostree.final-diffid- \
             -t localhost/secureblue-chunkah-test:latest --output "oci:${oci_dir}"
