@@ -36,7 +36,6 @@ jobs:
           config_file="${temp_dir}/chunkah-config.json"
           podman inspect "${image_ref}" > "${config_file}"
           oci_dir="${temp_dir}/oci-out"
-          mkdir "${oci_dir}"
           podman run --rm -v "${temp_dir}:${temp_dir}" \
             --mount="type=image,src=${image_ref},destination=/chunkah" \
             quay.io/coreos/chunkah:dev build --config "${config_file}" \
