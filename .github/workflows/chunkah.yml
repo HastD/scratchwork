@@ -16,35 +16,27 @@ defaults:
 jobs:
   chunkah:
     runs-on: ubuntu-24.04
-    permissions:
-      packages: write
+    strategy:
+      matrix:
+        compressed: ["", "--compressed"]
     steps:
       - name: Run Chunkah
-        run: |
-          image_ref='quay.io/fedora/fedora-iot:44'
-          podman pull "${image_ref}"
-          export CHUNKAH_CONFIG_STR="$(podman inspect "${image_ref}")"
-          podman run --rm --mount="type=image,src=${image_ref},destination=/chunkah" \
-            -e CHUNKAH_CONFIG_STR quay.io/coreos/chunkah:latest build \
-            --prune /sysroot/ --max-layers 72 --label ostree.commit- --label ostree.final-diffid- \
-            -t ghcr.io/hastd/fedora-iot-chunked:latest | podman load
-
-      - name: Set up Homebrew
-        uses: Homebrew/actions/setup-homebrew@main
-
-      - name: Push image
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          COMPRESSED: ${{ matrix.compressed }}
         run: |
-          brew analytics off
-          brew install podman skopeo
-          echo "${GH_TOKEN}" | podman login ghcr.io -u hastd --password-stdin
-          podman push ghcr.io/hastd/fedora-iot-chunked:latest
+          set -euxo pipefail
+          image_ref='ghcr.io/secureblue/kinoite-main-hardened:latest'
+          podman pull "${image_ref}"
+          temp_dir="$(mktemp -d)"
+          config_file="${temp_dir}/chunkah-config.json"
+          podman inspect "${image_ref}" > "${config_file}"
+          podman run --rm -v "${temp_dir}:${temp_dir}" \
+            --mount="type=image,src=${image_ref},destination=/chunkah" \
+            quay.io/coreos/chunkah:latest build --config "${config_file}" \
+            ${COMPRESSED} --prune /sysroot/ --max-layers 128 \
+            --label ostree.commit- --label ostree.final-diffid- \
+            -t localhost/secureblue-chunkah-test:latest | podman load
 
       - name: Print manifest (local)
         run: |
-          podman unshare skopeo inspect -n containers-storage:ghcr.io/hastd/fedora-iot-chunked:latest
-
-      - name: Print manifest (remote)
-        run: |
-          skopeo inspect -n docker://ghcr.io/hastd/fedora-iot-chunked:latest
+          podman unshare skopeo inspect -n containers-storage:localhost/secureblue-chunkah-test:latest
