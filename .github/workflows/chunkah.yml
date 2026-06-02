@@ -70,9 +70,9 @@ jobs:
           podman run --rm -v "${temp_dir}:${temp_dir}" \
             --mount="type=image,src=${image_ref},destination=/chunkah" \
             quay.io/coreos/chunkah:dev build --config "${config_file}" \
-            ${COMPRESSED} --prune /sysroot/ --max-layers 128 \
+            --compressed --prune /sysroot/ --max-layers 128 \
             --label ostree.commit- --label ostree.final-diffid- \
-            -t localhost/secureblue-chunkah-test:latest --output "oci:${oci_dir}"
+            -t "localhost/secureblue-kinoite-chunkah:${IMAGE_TAG}" --output "oci:${oci_dir}"
 
           manifest_digest=$(jq -cr '.manifests[0].digest' "${oci_dir}/index.json")
           cp "${oci_dir}/blobs/sha256/${manifest_digest#sha256:}" "manifest-${IMAGE_TAG}.json"
