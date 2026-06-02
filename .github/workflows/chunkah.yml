@@ -17,6 +17,7 @@ jobs:
   chunkah:
     runs-on: ubuntu-24.04
     strategy:
+      fail-fast: false
       matrix:
         date:
           - 20260501
