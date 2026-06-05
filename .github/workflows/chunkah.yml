@@ -39,11 +39,15 @@ jobs:
             -t "localhost/secureblue-kinoite-chunkah:latest" --output "oci:${oci_dir}"
 
           manifest_digest=$(jq -cr '.manifests[0].digest' "${oci_dir}/index.json")
-          cp "${oci_dir}/blobs/sha256/${manifest_digest#sha256:}" "manifest-${IMAGE_TAG}.json"
+          cp "${oci_dir}/blobs/sha256/${manifest_digest#sha256:}" "manifest.json"
 
       - name: Upload manifest
         uses: actions/upload-artifact@v7
         with:
-          path: ./manifest-${{ matrix.date }}.json
+          path: ./manifest.json
           if-no-files-found: error
           archive: false
+
+      - name: Pretty-print manifest
+        run: |
+          jq . manifest.json
