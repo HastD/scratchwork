@@ -16,41 +16,6 @@ defaults:
 jobs:
   chunkah:
     runs-on: ubuntu-24.04
-    strategy:
-      fail-fast: false
-      matrix:
-        date:
-          - 20260501
-          - 20260502
-          - 20260503
-          - 20260504
-          - 20260505
-          - 20260506
-          - 20260507
-          - 20260508
-          - 20260509
-          - 20260510
-          - 20260511
-          - 20260512
-          - 20260513
-          - 20260514
-          - 20260515
-          - 20260516
-          - 20260517
-          - 20260518
-          - 20260519
-          - 20260520
-          - 20260521
-          - 20260522
-          - 20260523
-          - 20260524
-          - 20260525
-          - 20260526
-          - 20260527
-          - 20260528
-          - 20260529
-          - 20260530
-          - 20260531
     steps:
       - name: Free disk space
         uses: hastd/free-disk-space@v0.1.2
@@ -58,11 +23,9 @@ jobs:
           skip-if-available: 64G
 
       - name: Run Chunkah
-        env:
-          IMAGE_TAG: ${{ matrix.date }}
         run: |
           set -euxo pipefail
-          image_ref="ghcr.io/secureblue/kinoite-main-hardened:${IMAGE_TAG}"
+          image_ref="ghcr.io/secureblue/kinoite-main-hardened:latest"
           podman pull "${image_ref}"
           temp_dir="$(mktemp -d)"
           config_file="${temp_dir}/chunkah-config.json"
@@ -73,7 +36,7 @@ jobs:
             quay.io/coreos/chunkah:dev build --config "${config_file}" \
             --compressed --prune /sysroot/ --max-layers 128 \
             --label ostree.commit- --label ostree.final-diffid- \
-            -t "localhost/secureblue-kinoite-chunkah:${IMAGE_TAG}" --output "oci:${oci_dir}"
+            -t "localhost/secureblue-kinoite-chunkah:latest" --output "oci:${oci_dir}"
 
           manifest_digest=$(jq -cr '.manifests[0].digest' "${oci_dir}/index.json")
           cp "${oci_dir}/blobs/sha256/${manifest_digest#sha256:}" "manifest-${IMAGE_TAG}.json"
