@@ -27,8 +27,11 @@ jobs:
         with:
           skip-if-available: 64G
 
-      - name: Set up Rust
-        run: rustup toolchain install stable
+      - name: Install dependencies
+        run: |
+          rustup toolchain install stable
+          sudo apt update
+          sudo apt install just
 
       - name: Build Chunkah image
         run: |
