@@ -32,13 +32,14 @@ jobs:
           git clone https://github.com/coreos/chunkah.git
           cd chunkah
           storage_dir=$(podman info -f '{{.Store.GraphRoot}}')
-          podman run -v "$PWD:$PWD" -w "$PWD" -v "${storage_dir}:${storage_dir}" quay.io/podman/stable sh -eu <<EOF
-          dnf install -y just rustup
-          rustup-init -y
-          rustup toolchain install stable
-          printf '[storage]\ngraphroot = "%s"\n' "${storage_dir}" > /etc/containers/storage.conf
-          just buildimg
-          EOF
+          podman run --privileged -v "$PWD:$PWD" -w "$PWD" -v "${storage_dir}:${storage_dir}" \
+            quay.io/podman/stable sh -eux '
+              dnf install -y just rustup && \
+              rustup-init -y && \
+              rustup toolchain install stable && \
+              printf "[storage]\ngraphroot = \"%s\"\n" "$1" > /etc/containers/storage.conf && \
+              just buildimg
+            ' sh "${storage_dir}"
 
       - name: Run Chunkah
         env:
