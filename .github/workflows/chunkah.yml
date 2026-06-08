@@ -33,7 +33,7 @@ jobs:
           cd chunkah
           storage_dir=$(podman info -f '{{.Store.GraphRoot}}')
           podman run --privileged -v "$PWD:$PWD" -w "$PWD" -v "${storage_dir}:${storage_dir}" \
-            quay.io/podman/stable sh -eux '
+            quay.io/podman/stable sh -eux -c '
               dnf install -y just rustup && \
               rustup-init -y && \
               rustup toolchain install stable && \
