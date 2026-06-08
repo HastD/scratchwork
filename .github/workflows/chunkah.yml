@@ -1,6 +1,6 @@
 name: chunkah
 on:
-  workflow_dispatch: # allow manually triggering builds
+  workflow_dispatch:
 
 permissions: {}
 
@@ -16,16 +16,32 @@ defaults:
 jobs:
   chunkah:
     runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        tag:
+          - latest
     steps:
       - name: Free disk space
         uses: hastd/free-disk-space@v0.1.2
         with:
           skip-if-available: 64G
 
+      - name: Set up Rust
+        run: rustup toolchain install stable
+
+      - name: Build Chunkah image
+        run: |
+          git clone https://github.com/coreos/chunkah.git
+          cd chunkah
+          just buildimg
+
       - name: Run Chunkah
+        env:
+          IMAGE_TAG: ${{ matrix.tag }}
         run: |
           set -euxo pipefail
-          image_ref="ghcr.io/secureblue/kinoite-main-hardened:latest"
+          image_ref="ghcr.io/secureblue/kinoite-main-hardened:${IMAGE_TAG}"
           podman pull "${image_ref}"
           temp_dir="$(mktemp -d)"
           config_file="${temp_dir}/chunkah-config.json"
@@ -33,21 +49,21 @@ jobs:
           oci_dir="${temp_dir}/oci-out"
           podman run --rm -v "${temp_dir}:${temp_dir}" \
             --mount="type=image,src=${image_ref},destination=/chunkah" \
-            quay.io/coreos/chunkah:dev build --config "${config_file}" \
+            localhost/chunkah build --config "${config_file}" \
             --compressed --prune /sysroot/ --max-layers 128 \
             --label ostree.commit- --label ostree.final-diffid- \
-            -t "localhost/secureblue-kinoite-chunkah:latest" --output "oci:${oci_dir}"
+            -t "localhost/secureblue-kinoite-chunkah:${IMAGE_TAG}" --output "oci:${oci_dir}"
 
           manifest_digest=$(jq -cr '.manifests[0].digest' "${oci_dir}/index.json")
-          cp "${oci_dir}/blobs/sha256/${manifest_digest#sha256:}" "manifest.json"
+          cp "${oci_dir}/blobs/sha256/${manifest_digest#sha256:}" "manifest-${IMAGE_TAG}.json"
 
       - name: Upload manifest
         uses: actions/upload-artifact@v7
         with:
-          path: ./manifest.json
+          path: ./manifest-${{ matrix.tag }}.json
           if-no-files-found: error
           archive: false
 
       - name: Pretty-print manifest
         run: |
-          jq . manifest.json
+          jq . manifest-*.json
