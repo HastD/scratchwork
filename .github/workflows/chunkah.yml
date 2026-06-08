@@ -27,19 +27,18 @@ jobs:
         with:
           skip-if-available: 64G
 
-      - name: Set up Homebrew
-        uses: Homebrew/actions/setup-homebrew@main
-
-      - name: Install dependencies
-        run: |
-          rustup toolchain install stable
-          brew install just podman
-
       - name: Build Chunkah image
         run: |
           git clone https://github.com/coreos/chunkah.git
           cd chunkah
+          storage_dir=$(podman info -f '{{.Store.GraphRoot}}')
+          podman run -v "$PWD:$PWD" -w "$PWD" -v "${storage_dir}:${storage_dir}" quay.io/podman/stable sh -eu <<EOF
+          dnf install -y just rustup
+          rustup-init -y
+          rustup toolchain install stable
+          printf '[storage]\ngraphroot = "%s"\n' "${storage_dir}" > /etc/containers/storage.conf
           just buildimg
+          EOF
 
       - name: Run Chunkah
         env:
