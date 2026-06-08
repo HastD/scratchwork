@@ -16,7 +16,6 @@ defaults:
 jobs:
   chunkah:
     runs-on: ubuntu-24.04
-    container: quay.io/podman/stable:latest
     strategy:
       fail-fast: false
       matrix:
@@ -28,11 +27,13 @@ jobs:
         with:
           skip-if-available: 64G
 
+      - name: Set up Homebrew
+        uses: Homebrew/actions/setup-homebrew@main
+
       - name: Install dependencies
         run: |
-          sudo dnf install -y jq just rustup
-          rustup-init
           rustup toolchain install stable
+          brew install just podman
 
       - name: Build Chunkah image
         run: |
