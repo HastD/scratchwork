@@ -34,7 +34,7 @@ jobs:
           storage_dir=$(podman info -f '{{.Store.GraphRoot}}')
           podman run --privileged -v "$PWD:$PWD" -w "$PWD" -v "${storage_dir}:${storage_dir}" \
             quay.io/podman/stable sh -eux -c '
-              dnf install -y just rustup && \
+              dnf install -y buildah jq just rustup && \
               rustup-init -y && \
               . "$HOME/.cargo/env" && \
               printf "[storage]\ngraphroot = \"%s\"\n" "$1" > /etc/containers/storage.conf && \
