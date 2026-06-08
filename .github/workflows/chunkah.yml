@@ -36,7 +36,7 @@ jobs:
             quay.io/podman/stable sh -eux -c '
               dnf install -y just rustup && \
               rustup-init -y && \
-              rustup toolchain install stable && \
+              . "$HOME/.cargo/env" && \
               printf "[storage]\ngraphroot = \"%s\"\n" "$1" > /etc/containers/storage.conf && \
               just buildimg
             ' sh "${storage_dir}"
