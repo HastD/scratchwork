@@ -14,19 +14,9 @@ jobs:
         run: |
           secureblue_gpg_fingerprint='26B4463ED8F313BC7E3FBDF9D9223AF0F47B3E41'
           curl -fLsS --retry 3 -O https://repo.secureblue.dev/secureblue.gpg
-          valid_fingerprint=0
           gpg --show-keys --with-colons secureblue.gpg \
             | awk -F: '$1 == "fpr" || $1 == "fpr2" { print $10 }'
           gpg --show-keys --with-colons secureblue.gpg \
             | awk -F: '$1 == "fpr" || $1 == "fpr2" { print $10 }' \
-            | while IFS= read -r fingerprint; do
-              if [ "${secureblue_gpg_fingerprint}" = "${fingerprint}" ]; then
-                valid_fingerprint=1
-                break
-              fi
-            done
-          if [ "${valid_fingerprint}" != 1 ]; then
-            echo "Expected GPG fingerprint ${secureblue_gpg_fingerprint} not found!"
-            exit 1
-          fi
+            | grep -Fqx "${secureblue_gpg_fingerprint}"
           rpmkeys --import secureblue.gpg
