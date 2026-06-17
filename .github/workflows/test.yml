@@ -6,24 +6,12 @@ permissions: {}
 
 jobs:
   test:
-    name: Test initramfs
+    name: Test slsa-verifier container install
     runs-on: ubuntu-latest
+    container: archlinux:base-devel
     steps:
-      - uses: hastd/free-disk-space@v0.1.2
-        with:
-          skip-if-available: "64G"
-      - name: test
-        shell: bash
-        run: |
-          for i in {0..30}; do
-            tag=$(date -d "$i days ago" -u '+%Y%m%d')
-            curr_image="ghcr.io/secureblue/silverblue-main-hardened:$tag"
-            podman pull -q "$curr_image" >/dev/null
-            printf '%s' "$tag: "
-            podman run --rm "$curr_image" bash -c 'sha256sum /usr/lib/modules/*/initramfs.img'
-            if [[ -n "${prev_image-}" ]]; then
-              podman rmi -f "$prev_image" >/dev/null
-              podman system prune -f >/dev/null
-            fi
-            prev_image="$curr_image"
-          done
+      - name: Install slsa-verifier
+        uses: slsa-framework/slsa-verifier/actions/installer@ea584f4502babc6f60d9bc799dbbb13c1caa9ee6 # v2.7.1
+
+      - name: Print version
+        run: slsa-verifier version
