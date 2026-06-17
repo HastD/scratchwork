@@ -6,12 +6,26 @@ permissions: {}
 
 jobs:
   test:
-    name: Test slsa-verifier container install
+    name: Test gpg key
     runs-on: ubuntu-latest
     container: archlinux:base-devel
     steps:
-      - name: Install slsa-verifier
-        uses: slsa-framework/slsa-verifier/actions/installer@ea584f4502babc6f60d9bc799dbbb13c1caa9ee6 # v2.7.1
-
-      - name: Print version
-        run: slsa-verifier version
+      - name: Get GPG key
+        run: |
+          secureblue_gpg_fingerprint='26B4463ED8F313BC7E3FBDF9D9223AF0F47B3E41'
+          curl -fLsS --retry 3 -O https://repo.secureblue.dev/secureblue.gpg
+          valid_fingerprint=0
+          # Reference for GPG colon-listing format: https://github.com/gpg/gnupg/blob/master/doc/DETAILS
+          gpg --show-keys --with-colons secureblue.gpg \
+            | awk -F: '$1 == "fpr" || $1 == "fpr2" { print $10 }' \
+            | while IFS= read -r fingerprint; do
+              if [ "${secureblue_gpg_fingerprint}" = "${fingerprint}" ]; then
+                valid_fingerprint=1
+                break
+              fi
+            done
+          if [ "${valid_fingerprint}" != 1 ]; then
+            echo "Expected GPG fingerprint ${secureblue_gpg_fingerprint} not found!"
+            exit 1
+          fi
+          rpmkeys --import secureblue.gpg
