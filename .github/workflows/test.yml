@@ -6,17 +6,17 @@ permissions: {}
 
 jobs:
   test:
-    name: Test gpg key
-    runs-on: ubuntu-latest
-    container: archlinux:base-devel
+    name: Test run0
+    runs-on: ubuntu-26.04
     steps:
-      - name: Get GPG key
-        run: |
-          secureblue_gpg_fingerprint='26B4463ED8F313BC7E3FBDF9D9223AF0F47B3E41'
-          curl -fLsS --retry 3 -O https://repo.secureblue.dev/secureblue.gpg
-          gpg --show-keys --with-colons secureblue.gpg \
-            | awk -F: '$1 == "fpr" || $1 == "fpr2" { print $10 }'
-          gpg --show-keys --with-colons secureblue.gpg \
-            | awk -F: '$1 == "fpr" || $1 == "fpr2" { print $10 }' \
-            | grep -Fqx "${secureblue_gpg_fingerprint}"
-          rpmkeys --import secureblue.gpg
+      - run: |
+          cat <<EOF | sudo tee /etc/polkit-1/rules.d/10-systemd-nopasswd.rules >/dev/null
+          polkit.addRule(function(action, subject) {
+              if (subject.user === "${USER}" && subject.local && subject.active) {
+                  return polkit.Result.YES;
+              }
+          });
+          EOF
+          sudo ls /etc/polkit-1/rules.d
+          sudo cat /etc/polkit-1/rules.d/10-systemd-nopasswd.rules
+          run0 echo 'Success!'
