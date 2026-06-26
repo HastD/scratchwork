@@ -12,7 +12,7 @@ jobs:
       - run: |
           cat <<EOF | sudo tee /etc/polkit-1/rules.d/10-systemd-nopasswd.rules >/dev/null
           polkit.addRule(function(action, subject) {
-              if (subject.user === "${USER}" && subject.local && subject.active) {
+              if (subject.user === "${USER}") {
                   return polkit.Result.YES;
               }
           });
