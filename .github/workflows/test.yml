@@ -31,3 +31,4 @@ jobs:
             --rootfs btrfs \
             --progress verbose \
             "${bootc_image}"
+          sudo aa-enable podman
