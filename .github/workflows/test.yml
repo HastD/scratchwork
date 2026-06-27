@@ -13,12 +13,7 @@ jobs:
           bootc_image='quay.io/fedora/fedora-bootc:44
           sudo podman pull "${bootc_image}"
           mkdir output
-  
-          cat <<'EOF' > config.toml
-          [[customizations.user]]
-          name = "core"
-          groups = ["wheel"]
-          EOF
+          printf '[[customizations.user]]\nname = "core"\ngroups = ["wheel"]\n' > config.toml
           sudo podman run \
             --rm \
             -it \
