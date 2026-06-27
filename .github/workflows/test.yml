@@ -6,7 +6,7 @@ permissions: {}
 
 jobs:
   test:
-    name: Test run0
+    name: Test bootc image builder
     runs-on: ubuntu-26.04
     steps:
       - run: |
