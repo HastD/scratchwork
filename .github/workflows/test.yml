@@ -14,6 +14,7 @@ jobs:
           sudo podman pull "${bootc_image}"
           mkdir output
           printf '[[customizations.user]]\nname = "core"\ngroups = ["wheel"]\n' > config.toml
+          sudo aa-disable podman
           sudo podman run \
             --rm \
             -it \
