@@ -7,7 +7,7 @@ permissions: {}
 jobs:
   test:
     name: Test bootc image builder
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     steps:
       - run: |
           bootc_image='quay.io/fedora/fedora-bootc:44'
