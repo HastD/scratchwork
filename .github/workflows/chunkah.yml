@@ -70,7 +70,7 @@ jobs:
           oci_dir="${temp_dir}/oci-out"
           podman run --rm -v "${temp_dir}:${temp_dir}" \
             --mount="type=image,src=${image_ref},destination=/chunkah" \
-            ghcr.io/hastd/chunkah:dev build --config "${config_file}" \
+            quay.io/coreos/chunkah:latest build --config "${config_file}" \
             --compressed --prune /sysroot/ --max-layers 128 \
             --label ostree.commit- --label ostree.final-diffid- \
             -t "localhost/secureblue-kinoite-chunkah:${IMAGE_TAG}" --output "oci:${oci_dir}"
