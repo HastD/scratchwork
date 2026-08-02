@@ -50,4 +50,4 @@ jobs:
 
       - name: Pretty-print manifest
         run: |
-          jq . manifest-*.json
+          jq . manifest.json
