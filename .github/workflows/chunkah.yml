@@ -28,9 +28,7 @@ jobs:
         with:
           skip-if-available: 64G
 
-      - name: Install dependencies
-        run: |
-          sudo apt install just
+      - uses: extractions/setup-just@v4
 
       - name: Build Chunkah image
         run: |
