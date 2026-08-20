@@ -19,29 +19,50 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        hash:
-          - "0437e9d4c5383c79f1dbf7a848f8502f1c073bb461d62d1702073c3c81aaf980"
-          - "454f21a041b89ffb0fac53d97bf7e5a71a8355d81544929972c1abd68058013f"
+        tag:
+          - 20260531
+          - 20260601
+          - 20260602
+          - 20260603
+          - 20260604
+          - 20260605
+          - 20260606
+          - 20260607
+          - 20260608
+          - 20260609
+          - 20260610
+          - 20260611
+          - 20260612
+          - 20260613
+          - 20260614
+          - 20260615
+          - 20260616
+          - 20260617
+          - 20260618
+          - 20260619
+          - 20260620
+          - 20260621
+          - 20260622
+          - 20260623
+          - 20260624
+          - 20260625
+          - 20260626
+          - 20260627
+          - 20260628
+          - 20260629
+          - 20260630
     steps:
       - name: Free disk space
         uses: hastd/free-disk-space@v0.1.2
         with:
           skip-if-available: 64G
 
-      - uses: extractions/setup-just@v4
-
-      - name: Build Chunkah image
-        run: |
-          git clone https://github.com/HastD/chunkah -b dir-mtimes
-          cd chunkah
-          just buildimg
-
       - name: Run Chunkah
         env:
-          HASH: ${{ matrix.hash }}
+          IMAGE_TAG: ${{ matrix.tag }}
         run: |
           set -euxo pipefail
-          image_ref="ghcr.io/hastd/silverblue-main-hardened@sha256:${HASH}"
+          image_ref="ghcr.io/secureblue/kinoite-main-hardened:${IMAGE_TAG}"
           podman pull "${image_ref}"
           temp_dir="$(mktemp -d)"
           config_file="${temp_dir}/chunkah-config.json"
@@ -49,23 +70,21 @@ jobs:
           oci_dir="${temp_dir}/oci-out"
           podman run --rm -v "${temp_dir}:${temp_dir}" \
             --mount="type=image,src=${image_ref},destination=/chunkah" \
-            localhost/chunkah:latest build --config "${config_file}" \
-            --compressed --prune /sysroot/ --max-layers 128 \
+            quay.io/coreos/chunkah:latest build --config "${config_file}" \
+            --compressed --prune /sysroot/ --max-layers 256 \
             --label ostree.commit- --label ostree.final-diffid- \
-            -t "localhost/silverblue-main-hardened:latest" --output "oci:${oci_dir}"
+            -t "localhost/secureblue-kinoite-chunkah:${IMAGE_TAG}" --output "oci:${oci_dir}"
 
           manifest_digest=$(jq -cr '.manifests[0].digest' "${oci_dir}/index.json")
-          cp "${oci_dir}/blobs/sha256/${manifest_digest#sha256:}" "manifest-${HASH}.json"
+          cp "${oci_dir}/blobs/sha256/${manifest_digest#sha256:}" "manifest-256layer-${IMAGE_TAG}.json"
 
       - name: Upload manifest
         uses: actions/upload-artifact@v7
         with:
-          path: ./manifest-${{ matrix.hash }}.json
+          path: ./manifest-256layer-${{ matrix.tag }}.json
           if-no-files-found: error
           archive: false
 
       - name: Pretty-print manifest
-        env:
-          HASH: ${{ matrix.hash }}
         run: |
-          jq . "manifest-${HASH}.json"
+          jq . manifest-256layer-*.json
