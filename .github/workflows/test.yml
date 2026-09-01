@@ -5,30 +5,44 @@ on:
 permissions: {}
 
 jobs:
-  test:
-    name: Test bootc image builder
+  ubuntu-test:
+    name: Image push test
     runs-on: ubuntu-26.04
+    permissions:
+      packages: write
+    env:
+      TEST_IMAGE: "ghcr.io/hastd/iot-doublepush-test:latest"
     steps:
-      - run: sudo apt install apparmor-utils
-      - run: |
-          bootc_image='quay.io/fedora/fedora-bootc:44'
-          sudo podman pull "${bootc_image}"
-          mkdir output
-          printf '[[customizations.user]]\nname = "core"\ngroups = ["wheel"]\n' > config.toml
-          sudo aa-disable unpriv_bwrap
-          sudo podman run \
-            --rm \
-            -it \
-            --privileged \
-            --pull=newer \
-            --security-opt label=type:unconfined_t \
-            -v ./output:/output \
-            -v ./config.toml:/config.toml:ro \
-            -v /var/lib/containers/storage:/var/lib/containers/storage \
-            quay.io/centos-bootc/bootc-image-builder:latest \
-            --type qcow2 \
-            --use-librepo=True \
-            --rootfs btrfs \
-            --progress verbose \
-            "${bootc_image}"
-          sudo aa-enforce unpriv_bwrap
+      - name: Login to ghcr
+        env:
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "${GHCR_TOKEN}" | podman login ghcr.io -u hastd --password-stdin
+
+      - name: Build test image
+        run: |
+          input_image='quay.io/fedora/fedora-iot:44'
+          podman pull "${input_image}"
+          podman inspect "${input_image}" > chunkah-config.json
+          podman run --rm -v "${PWD}:${PWD}" \
+            --mount="type=image,src=${input_image},destination=/chunkah" \
+            quay.io/coreos/chunkah:latest build --config "${PWD}/chunkah-config.json" \
+            --compressed --prune /sysroot/ --max-layers 64 \
+            --label ostree.commit- --label ostree.final-diffid- \
+            -t "${TEST_IMAGE}" --output "oci:${PWD}/oci-out"
+          skopeo copy "oci:${PWD}/oci-out" "containers-storage:${TEST_IMAGE}"
+
+      - name: Local image manifest
+        run: skopeo inspect "containers-storage:${TEST_IMAGE}"
+
+      - name: First push
+        run: podman push "${TEST_IMAGE}"
+
+      - name: Manifest after first push
+        run: skopeo inspect "docker://${TEST_IMAGE}"
+
+      - name: Second push
+        run: podman push "${TEST_IMAGE}"
+
+      - name: Manifest after second push
+        run: skopeo inspect "docker://${TEST_IMAGE}"
