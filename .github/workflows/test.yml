@@ -30,10 +30,10 @@ jobs:
             --compressed --prune /sysroot/ --max-layers 64 \
             --label ostree.commit- --label ostree.final-diffid- \
             -t "${TEST_IMAGE}" --output "oci:${PWD}/oci-out"
-          skopeo copy "oci:${PWD}/oci-out" "containers-storage:${TEST_IMAGE}"
+          podman unshare skopeo copy "oci:${PWD}/oci-out" "containers-storage:${TEST_IMAGE}"
 
       - name: Local image manifest
-        run: skopeo inspect "containers-storage:${TEST_IMAGE}"
+        run: podman unshare skopeo inspect "containers-storage:${TEST_IMAGE}"
 
       - name: First push
         run: podman push "${TEST_IMAGE}"
