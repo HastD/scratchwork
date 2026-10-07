@@ -11,6 +11,7 @@ jobs:
     steps:
       - name: Unshare test
         run: |
+          sudo aa-complain /usr/bin/unshare
           unshare --user --map-current-user --map-subids --keep-caps --mount --propagation=shared -- echo 'It works!'
 
       - name: Show logs
