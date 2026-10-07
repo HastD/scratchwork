@@ -11,12 +11,5 @@ jobs:
     steps:
       - name: Unshare test
         run: |
-          sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
-          sudo apt install apparmor-utils
-          sudo aa-teardown
-          /usr/bin/unshare --user --map-current-user --map-subids --keep-caps --mount --propagation=shared -- echo 'It works!'
-
-      - name: Show logs
-        if: always()
-        run: |
-          sudo journalctl -b0 | grep DENIED
+          command -v capsh
+          sudo apt install libcap2-bin
