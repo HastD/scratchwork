@@ -11,7 +11,7 @@ jobs:
     steps:
       - name: Unshare test
         run: |
-          ls /etc/apparmor.d/
+          sudo sysctl -w kernel.apparmor_restrict_unprivileged_unconfined=0
           sudo apparmor_parser -R /etc/apparmor.d/unprivileged_userns
           unshare --user --map-current-user --map-subids --keep-caps --mount --propagation=shared -- echo 'It works!'
 
