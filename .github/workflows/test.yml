@@ -11,8 +11,8 @@ jobs:
     steps:
       - name: Unshare test
         run: |
-          sudo apt install apparmor-utils
-          sudo aa-disable /usr/bin/unshare
+          ls /etc/apparmor.d/
+          sudo apparmor_parser -R /etc/apparmor.d/unprivileged_userns
           unshare --user --map-current-user --map-subids --keep-caps --mount --propagation=shared -- echo 'It works!'
 
       - name: Show logs
