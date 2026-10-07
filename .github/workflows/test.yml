@@ -12,4 +12,8 @@ jobs:
       - name: Unshare test
         run: |
           unshare --user --map-current-user --map-subids --keep-caps --mount --propagation=shared -- echo 'It works!'
+
+      - name: Show logs
+        if: always()
+        run: |
           sudo journalctl -b0 | grep DENIED
