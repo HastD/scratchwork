@@ -11,9 +11,9 @@ jobs:
     steps:
       - name: Unshare test
         run: |
-          sudo sysctl -w kernel.apparmor_restrict_unprivileged_unconfined=0
-          sudo apparmor_parser -R /etc/apparmor.d/unprivileged_userns
-          unshare --user --map-current-user --map-subids --keep-caps --mount --propagation=shared -- echo 'It works!'
+          sudo apt install apparmor-utils
+          sudo aa-complain /usr/bin/unshare
+          /usr/bin/unshare --user --map-current-user --map-subids --keep-caps --mount --propagation=shared -- echo 'It works!'
 
       - name: Show logs
         if: always()
