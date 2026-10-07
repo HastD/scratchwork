@@ -5,44 +5,10 @@ on:
 permissions: {}
 
 jobs:
-  ubuntu-test:
-    name: Image push test
+  unshare-test:
+    name: Unshare test
     runs-on: ubuntu-26.04
-    permissions:
-      packages: write
-    env:
-      TEST_IMAGE: "ghcr.io/hastd/iot-doublepush-test:latest"
     steps:
-      - name: Login to ghcr
-        env:
-          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Unshare test
         run: |
-          echo "${GHCR_TOKEN}" | podman login ghcr.io -u hastd --password-stdin
-
-      - name: Build test image
-        run: |
-          input_image='quay.io/fedora/fedora-iot:44'
-          podman pull "${input_image}"
-          podman inspect "${input_image}" > chunkah-config.json
-          podman run --rm -v "${PWD}:${PWD}" \
-            --mount="type=image,src=${input_image},destination=/chunkah" \
-            quay.io/coreos/chunkah:latest build --config "${PWD}/chunkah-config.json" \
-            --compressed --prune /sysroot/ --max-layers 64 \
-            --label ostree.commit- --label ostree.final-diffid- \
-            -t "${TEST_IMAGE}" --output "oci:${PWD}/oci-out"
-          podman unshare skopeo copy "oci:${PWD}/oci-out" "containers-storage:${TEST_IMAGE}"
-
-      - name: Local image manifest
-        run: podman unshare skopeo inspect "containers-storage:${TEST_IMAGE}"
-
-      - name: First push
-        run: podman push "${TEST_IMAGE}"
-
-      - name: Manifest after first push
-        run: skopeo inspect "docker://${TEST_IMAGE}"
-
-      - name: Second push
-        run: podman push "${TEST_IMAGE}"
-
-      - name: Manifest after second push
-        run: skopeo inspect "docker://${TEST_IMAGE}"
+          unshare --user --map-current-user --keep-subids --mount --propagation=shared -- echo 'It works!'
