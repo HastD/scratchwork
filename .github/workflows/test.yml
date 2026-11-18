@@ -23,6 +23,7 @@ jobs:
           archive: false
 
   provenance:
+    needs: [test-artifact]
     permissions:
       id-token: write
       actions: read
