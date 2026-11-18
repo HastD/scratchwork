@@ -5,15 +5,30 @@ on:
 permissions: {}
 
 jobs:
-  unshare-test:
-    name: Unshare test
+  test-artifact:
+    name: Test job
     runs-on: ubuntu-26.04
     steps:
-      - name: Unshare test
+      - name: Make artifact
         run: |
-          sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
-          sudo apt install apparmor-utils
-          sudo aa-teardown
-          /usr/bin/unshare --user --map-current-user --map-subids --keep-caps --mount --propagation=shared \
-            /usr/bin/unshare --user --map-current-user --map-subids --keep-caps --mount --propagation=shared \
-            -- echo 'It works!'
+          if [ "${GITHUB_RUN_ATTEMPT}" -le 1 ]; then
+            exit 1
+          fi
+          echo 'test artifact contents' > foo.txt
+
+      - name: Upload test artifact
+        uses: actions/upload-artifact@v7.0.2
+        with:
+          path: foo.txt
+          archive: false
+
+  provenance:
+    permissions:
+      id-token: write
+      actions: read
+      contents: read
+    uses: slsa-framework/actions/.github/workflows/attest_actions.yml@v0.2.0
+    with:
+      build-from-source: false
+      version: v0.1.1
+      watch-jobs: test-artifact
